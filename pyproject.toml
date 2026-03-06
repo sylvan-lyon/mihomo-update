@@ -10,4 +10,4 @@ dependencies = [
 ]
 
 [project.scripts]
-mihomo-update = "mihomo-update.cli:main"
+mihomo-update = "mihomo_update.cli:main"

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
 import argparse
+import copy
+import sys
 from pathlib import Path
 
 import requests
@@ -12,6 +13,20 @@ def fatal(msg: str, code: int = 2):
     print(msg, file=sys.stderr)
     sys.exit(code)
 
+def deep_merge(a, b):
+    out = copy.deepcopy(a)
+
+    for k, v in b.items():
+        if (
+            k in out
+            and isinstance(out[k], dict)
+            and isinstance(v, dict)
+        ):
+            out[k] = deep_merge(out[k], v)
+        else:
+            out[k] = v
+
+    return out
 
 def fetch_yaml(url: str, timeout: int) -> dict:
     try:
@@ -47,19 +62,6 @@ def read_yaml(path: Path) -> dict:
     return doc
 
 
-def extract_sub(doc: dict) -> tuple[list, list]:
-    proxies = doc.get("proxies")
-    rules = doc.get("rules")
-
-    if proxies is None:
-        fatal("subscription missing 'proxies'")
-
-    if rules is None:
-        fatal("subscription missing 'rules'")
-
-    return proxies, rules
-
-
 def write_yaml(path: Path, data: dict):
     try:
         with path.open("w") as f:
@@ -93,12 +95,9 @@ def main():
     sub_doc = fetch_yaml(args.url, timeout)
     print(f"Fetched subscription, timeout {timeout}")
 
-    proxies, rules = extract_sub(sub_doc)
+    merged = deep_merge(mihomo_cfg, sub_doc)
 
-    mihomo_cfg["proxies"] = proxies
-    mihomo_cfg["rules"] = rules
-
-    write_yaml(base / "config.yaml", mihomo_cfg)
+    write_yaml(base / "config.yaml", merged)
 
     print("Configuration updated")
 

@@ -1,1 +1,1 @@
-# Mihomo updater
+# Mihomo update

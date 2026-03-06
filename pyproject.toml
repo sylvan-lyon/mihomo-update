@@ -1,5 +1,5 @@
 [project]
-name = "mihomo-updater"
+name = "mihomo-update"
 version = "0.1.0"
 description = "Update mihomo proxies from subscription"
 readme = "README.md"
@@ -8,3 +8,6 @@ dependencies = [
     "pyyaml>=6.0.3",
     "requests>=2.32.5",
 ]
+
+[project.scripts]
+mihomo-update = "mihomo-update.cli:main"

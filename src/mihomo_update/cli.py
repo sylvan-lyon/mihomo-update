@@ -1,96 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse
-import copy
-import sys
 from pathlib import Path
 
-import requests
-import yaml
-
+from mihomo_update.error import MihomoUpdateError
 from mihomo_update.i18n import get_translator
-from mihomo_update.error import *
+from mihomo_update.helper import (
+    fatal,
+    deep_merge,
+    fetch_yaml,
+    read_yaml,
+    write_yaml,
+)
 i18n = get_translator()
-
-def fatal(msg: str, code: int = 2):
-    print(msg, file=sys.stderr)
-    sys.exit(code)
-
-
-def deep_merge(a, b):
-    out = copy.deepcopy(b)
-
-    for k, v in a.items():
-        if (
-            k in out
-            and isinstance(out[k], dict)
-            and isinstance(v, dict)
-        ):
-            out[k] = deep_merge(out[k], v)
-        else:
-            out[k] = v
-
-    return out
-
-
-def fetch_yaml(url: str, timeout: int, user_agent: str) -> dict:
-    """
-    # Raises
-    NetworkError YamlParseError
-    """
-    try:
-        resp = requests.get(
-            url,
-            headers={"User-Agent": user_agent},
-            timeout=timeout,
-        )
-    except requests.RequestException as e:
-        raise NetworkError(i18n("NetworkError: {}").format(str(e))) from e
-
-    if not resp.ok:
-        raise NetworkError(i18n("HTTP request failed with status {}").format(resp.status_code))
-
-    try:
-        return yaml.safe_load(resp.text)
-    except yaml.YAMLError as e:
-        raise YamlParseError(i18n("Failed to parse content of {} as YAML").format(url)) from e
-
-
-def read_yaml(path: Path) -> dict:
-    """
-    # Raises
-    FileNotFoundError YamlParseError
-    """
-    try:
-        with path.open() as f:
-            doc = yaml.safe_load(f)
-    except FileNotFoundError as e:
-        raise FileMissingError(i18n("File {} not exsists").format(str(path))) from e
-    except yaml.YAMLError as e:
-        raise YamlParseError(i18n("Failed to parse response as YAML: {}").format(str(path))) from e
-
-    if not isinstance(doc, dict):
-        raise YamlParseError(i18n("Invalid YAML structure in {}").format(path))
-
-    return doc
-
-
-def write_yaml(path: Path, data: dict):
-    """
-    # Raises
-    FileWriteError
-    """
-    try:
-        with path.open("w") as f:
-            yaml.safe_dump(
-                data,
-                f,
-                allow_unicode=True,
-                default_flow_style=False,
-            )
-    except OSError as e:
-        raise FileWriteError(i18n("Failed to write file: {}").format(e))
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -131,8 +53,8 @@ def main():
     # server config
     try:
         mihomo_cfg = read_yaml(base / "mihomo-server.yaml")
-    except e:
-        fatal(i18n("Tried to read mihomo-server config, but {}").format(str(e)))
+    except MihomoUpdateError as e:
+        fatal(i18n("Tried to read mihomo-server config, but {}").format(e.translate(i18n)))
     else:
         print(i18n("Loaded mihomo server configuration"))
 
@@ -144,8 +66,8 @@ def main():
             )
         )
         sub_doc = fetch_yaml(args.url, args.timeout, args.user_agent)
-    except e:
-        fatal(i18n("Tried to fetch subscription config, but {}").format(str(e)))
+    except MihomoUpdateError as e:
+        fatal(i18n("Tried to fetch subscription config, but {}").format(e.translate(i18n)))
     else:
         print(i18n("Successfully got subscription config!"))
 
@@ -161,8 +83,8 @@ def main():
     merged = deep_merge(mihomo_cfg, sub_doc)
     try:
         write_yaml(base / "config.yaml", merged)
-    except e:
-        fatal(i18n("Cannot write merged configuration, because {}").format(str(e)))
+    except MihomoUpdateError as e:
+        fatal(i18n("Cannot write merged configuration, because {}").format(e.translate(i18n)))
     else:
         print(i18n("mihomo configuration updated successfully!"))
 

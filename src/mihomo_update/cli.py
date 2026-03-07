@@ -14,9 +14,9 @@ def fatal(msg: str, code: int = 2):
     sys.exit(code)
 
 def deep_merge(a, b):
-    out = copy.deepcopy(a)
+    out = copy.deepcopy(b)
 
-    for k, v in b.items():
+    for k, v in a.items():
         if (
             k in out
             and isinstance(out[k], dict)

@@ -1,0 +1,55 @@
+msgid ""
+msgstr ""
+"Language: zh_CN\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Manage mihomo configuration"
+msgstr "管理 mihomo 配置"
+
+msgid "Subscription URL"
+msgstr "订阅地址"
+
+msgid "Configuration directory"
+msgstr "配置目录"
+
+msgid "Timeout for fetching subscription"
+msgstr "获取订阅的超时时间"
+
+msgid "User-Agent for subscription request"
+msgstr "订阅请求使用的 User-Agent"
+
+msgid "Override language (e.g. en, zh_CN)"
+msgstr "指定语言（例如 en, zh_CN）"
+
+msgid "Loaded mihomo server configuration"
+msgstr "已加载 mihomo server 配置"
+
+msgid "Fetching subscription... timeout={} UA={}"
+msgstr "正在获取订阅... 超时={} UA={}"
+
+msgid "Cached subscription successfully!"
+msgstr "订阅缓存成功！"
+
+msgid "mihomo configuration updated successfully!"
+msgstr "mihomo 配置更新成功！"
+
+msgid "Failed to fetch subscription config: {}"
+msgstr "无法获取订阅配置：{}"
+
+msgid "HTTP request failed with status {}"
+msgstr "HTTP 请求失败，状态码 {}"
+
+msgid "Failed to parse response as YAML: {}"
+msgstr "无法将响应解析为 YAML：{}"
+
+msgid "File not found: {}"
+msgstr "文件不存在：{}"
+
+msgid "Failed to parse {} as YAML: {}"
+msgstr "无法将 {} 解析为 YAML：{}"
+
+msgid "Invalid YAML structure in {}"
+msgstr "{} 的 YAML 结构无效"
+
+msgid "Failed to write file: {}"
+msgstr "写入文件失败：{}"

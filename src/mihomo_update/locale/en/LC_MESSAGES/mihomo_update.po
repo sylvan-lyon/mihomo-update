@@ -1,0 +1,55 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Manage mihomo configuration"
+msgstr "Manage mihomo configuration"
+
+msgid "Subscription URL"
+msgstr "Subscription URL"
+
+msgid "Configuration directory"
+msgstr "Configuration directory"
+
+msgid "Timeout for fetching subscription"
+msgstr "Timeout for fetching subscription"
+
+msgid "User-Agent for subscription request"
+msgstr "User-Agent for subscription request"
+
+msgid "Override language (e.g. en, zh_CN)"
+msgstr "Override language (e.g. en, zh_CN)"
+
+msgid "Loaded mihomo server configuration"
+msgstr "Loaded mihomo server configuration"
+
+msgid "Fetching subscription... timeout={} UA={}"
+msgstr "Fetching subscription... timeout={} UA={}"
+
+msgid "Cached subscription successfully!"
+msgstr "订阅缓存成功！"
+
+msgid "mihomo configuration updated successfully!"
+msgstr "mihomo configuration updated successfully!"
+
+msgid "Failed to fetch subscription config: {}"
+msgstr "Failed to fetch subscription config: {}"
+
+msgid "HTTP request failed with status {}"
+msgstr "HTTP request failed with status {}"
+
+msgid "Failed to parse response as YAML: {}"
+msgstr "Failed to parse response as YAML: {}"
+
+msgid "File not found: {}"
+msgstr "File not found: {}"
+
+msgid "Failed to parse {} as YAML: {}"
+msgstr "Failed to parse {} as YAML: {}"
+
+msgid "Invalid YAML structure in {}"
+msgstr "Invalid YAML structure in {}"
+
+msgid "Failed to write file: {}"
+msgstr "Failed to write file: {}"

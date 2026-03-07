@@ -8,10 +8,13 @@ from pathlib import Path
 import requests
 import yaml
 
+from mihomo_update.i18n import get_translator
+i18n = get_translator()
 
 def fatal(msg: str, code: int = 2):
     print(msg, file=sys.stderr)
     sys.exit(code)
+
 
 def deep_merge(a, b):
     out = copy.deepcopy(b)
@@ -28,6 +31,7 @@ def deep_merge(a, b):
 
     return out
 
+
 def fetch_yaml(url: str, timeout: int, user_agent: str) -> dict:
     try:
         resp = requests.get(
@@ -36,15 +40,15 @@ def fetch_yaml(url: str, timeout: int, user_agent: str) -> dict:
             timeout=timeout,
         )
     except requests.RequestException as e:
-        fatal(f"request error: {e}")
+        fatal(i18n("Failed to fetch subscription config: {}").format(e))
 
     if not resp.ok:
-        fatal(f"http error {resp.status_code}")
+        fatal(i18n("HTTP request failed with status {}").format(resp.status_code))
 
     try:
         return yaml.safe_load(resp.text)
     except yaml.YAMLError as e:
-        fatal(f"yaml decode error: {e}")
+        fatal(i18n("Failed to parse response as YAML: {}").format(e))
 
 
 def read_yaml(path: Path) -> dict:
@@ -52,12 +56,12 @@ def read_yaml(path: Path) -> dict:
         with path.open() as f:
             doc = yaml.safe_load(f)
     except FileNotFoundError:
-        fatal(f"file not found: {path}")
+        fatal(i18n("File not found: {}").format(path))
     except yaml.YAMLError as e:
-        fatal(f"yaml error in {path}: {e}")
+        fatal(i18n("Failed to parse {} as YAML: {}").format(path, e))
 
     if not isinstance(doc, dict):
-        fatal(f"{path} is not a yaml object")
+        fatal(i18n("Invalid YAML structure in {}").format(path))
 
     return doc
 
@@ -72,34 +76,60 @@ def write_yaml(path: Path, data: dict):
                 default_flow_style=False,
             )
     except OSError as e:
-        fatal(f"write error: {e}")
+        fatal(i18n("Failed to write file: {}").format(e))
 
 
-def main():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Update mihomo proxies from subscription"
+        description=i18n("Manage mihomo configuration")
     )
 
-    parser.add_argument("--url", required=True)
-    parser.add_argument("--path", required=True)
-    parser.add_argument("--timeout", required=False, default=60)
-    parser.add_argument("--user-agent", required=False, default="clash-verge/v2.4.0")
+    parser.add_argument("--url", required=True, help=i18n("Subscription URL"))
+    parser.add_argument("--path", required=True, help=i18n("Configuration directory"))
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=60,
+        help=i18n("Timeout for fetching subscription"),
+    )
+    parser.add_argument(
+        "--user-agent",
+        default="clash-verge/v2.4.0",
+        help=i18n("User-Agent for subscription request"),
+    )
+    parser.add_argument(
+        "--lang",
+        choices=["en", "zh_CN"],
+        help=i18n("Override language (e.g. en, zh_CN)"),
+    )
 
-    args = parser.parse_args()
+    return parser.parse_args()
+
+def main():
+    global i18n
+
+    args = parse_args()
+    if args.lang:
+        i18n = get_translator(args.lang)
 
     base = Path(args.path)
 
     mihomo_cfg = read_yaml(base / "mihomo-server.yaml")
-    print("Loaded mihomo configuration")
+    print(i18n("Loaded mihomo server configuration"))
 
     sub_doc = fetch_yaml(args.url, args.timeout, args.user_agent)
-    print(f"Fetched subscription, timeout: {args.timeout}, UA: {args.user_agent}")
+    print(
+        i18n("Fetching subscription... timeout={} UA={}").format(
+            args.timeout, args.user_agent
+        )
+    )
+
+    write_yaml(base / "cache.yaml", sub_doc)
+    print(i18n("Cached subscription successfully!"))
 
     merged = deep_merge(mihomo_cfg, sub_doc)
-
     write_yaml(base / "config.yaml", merged)
-
-    print("Configuration updated")
+    print(i18n("mihomo configuration updated successfully!"))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "mihomo-update"
-version = "0.3.0"
+version = "0.4.0"
 description = "Update mihomo proxies from subscription"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -11,3 +15,12 @@ dependencies = [
 
 [project.scripts]
 mihomo-update = "mihomo_update.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mihomo_update = ["locale/**/*.mo"]

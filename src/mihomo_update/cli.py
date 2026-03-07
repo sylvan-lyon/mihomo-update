@@ -93,7 +93,7 @@ def main():
     print("Loaded mihomo configuration")
 
     sub_doc = fetch_yaml(args.url, args.timeout, args.user_agent)
-    print(f"Fetched subscription, timeout: {timeout}, UA: {user_agent}")
+    print(f"Fetched subscription, timeout: {args.timeout}, UA: {args.user_agent}")
 
     merged = deep_merge(mihomo_cfg, sub_doc)
 

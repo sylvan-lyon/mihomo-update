@@ -1,6 +1,6 @@
 [project]
 name = "mihomo-update"
-version = "0.2.0"
+version = "0.3.0"
 description = "Update mihomo proxies from subscription"
 readme = "README.md"
 requires-python = ">=3.14"

@@ -28,11 +28,11 @@ def deep_merge(a, b):
 
     return out
 
-def fetch_yaml(url: str, timeout: int) -> dict:
+def fetch_yaml(url: str, timeout: int, user_agent: str) -> dict:
     try:
         resp = requests.get(
             url,
-            headers={"User-Agent": "Clash"},
+            headers={"User-Agent": user_agent},
             timeout=timeout,
         )
     except requests.RequestException as e:
@@ -82,7 +82,8 @@ def main():
 
     parser.add_argument("--url", required=True)
     parser.add_argument("--path", required=True)
-    parser.add_argument("--timeout", required=False)
+    parser.add_argument("--timeout", required=False, default=60)
+    parser.add_argument("--user-agent", required=False, default="clash-verge/v2.4.0")
 
     args = parser.parse_args()
 
@@ -91,7 +92,6 @@ def main():
     mihomo_cfg = read_yaml(base / "mihomo-server.yaml")
     print("Loaded mihomo configuration")
 
-    timeout = args.timeout if args.timeout is not None else 60
     sub_doc = fetch_yaml(args.url, timeout)
     print(f"Fetched subscription, timeout {timeout}")
 

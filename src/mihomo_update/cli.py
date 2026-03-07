@@ -9,6 +9,7 @@ import requests
 import yaml
 
 from mihomo_update.i18n import get_translator
+from mihomo_update.error import *
 i18n = get_translator()
 
 def fatal(msg: str, code: int = 2):
@@ -33,6 +34,10 @@ def deep_merge(a, b):
 
 
 def fetch_yaml(url: str, timeout: int, user_agent: str) -> dict:
+    """
+    # Raises
+    NetworkError YamlParseError
+    """
     try:
         resp = requests.get(
             url,
@@ -40,33 +45,41 @@ def fetch_yaml(url: str, timeout: int, user_agent: str) -> dict:
             timeout=timeout,
         )
     except requests.RequestException as e:
-        fatal(i18n("Failed to fetch subscription config: {}").format(e))
+        raise NetworkError(i18n("NetworkError: {}").format(str(e))) from e
 
     if not resp.ok:
-        fatal(i18n("HTTP request failed with status {}").format(resp.status_code))
+        raise NetworkError(i18n("HTTP request failed with status {}").format(resp.status_code))
 
     try:
         return yaml.safe_load(resp.text)
     except yaml.YAMLError as e:
-        fatal(i18n("Failed to parse response as YAML: {}").format(e))
+        raise YamlParseError(i18n("Failed to parse content of {} as YAML").format(url)) from e
 
 
 def read_yaml(path: Path) -> dict:
+    """
+    # Raises
+    FileNotFoundError YamlParseError
+    """
     try:
         with path.open() as f:
             doc = yaml.safe_load(f)
-    except FileNotFoundError:
-        fatal(i18n("File not found: {}").format(path))
+    except FileNotFoundError as e:
+        raise FileMissingError(i18n("File {} not exsists").format(str(path))) from e
     except yaml.YAMLError as e:
-        fatal(i18n("Failed to parse {} as YAML: {}").format(path, e))
+        raise YamlParseError(i18n("Failed to parse response as YAML: {}").format(str(path))) from e
 
     if not isinstance(doc, dict):
-        fatal(i18n("Invalid YAML structure in {}").format(path))
+        raise YamlParseError(i18n("Invalid YAML structure in {}").format(path))
 
     return doc
 
 
 def write_yaml(path: Path, data: dict):
+    """
+    # Raises
+    FileWriteError
+    """
     try:
         with path.open("w") as f:
             yaml.safe_dump(
@@ -76,7 +89,7 @@ def write_yaml(path: Path, data: dict):
                 default_flow_style=False,
             )
     except OSError as e:
-        fatal(i18n("Failed to write file: {}").format(e))
+        raise FileWriteError(i18n("Failed to write file: {}").format(e))
 
 
 def parse_args() -> argparse.Namespace:
@@ -113,23 +126,45 @@ def main():
         i18n = get_translator(args.lang)
 
     base = Path(args.path)
+    mihomo_cfg, sub_doc = None, None
 
-    mihomo_cfg = read_yaml(base / "mihomo-server.yaml")
-    print(i18n("Loaded mihomo server configuration"))
+    # server config
+    try:
+        mihomo_cfg = read_yaml(base / "mihomo-server.yaml")
+    except e:
+        fatal(i18n("Tried to read mihomo-server config, but {}").format(str(e)))
+    else:
+        print(i18n("Loaded mihomo server configuration"))
 
-    sub_doc = fetch_yaml(args.url, args.timeout, args.user_agent)
-    print(
-        i18n("Fetching subscription... timeout={} UA={}").format(
-            args.timeout, args.user_agent
+    # fetch_yaml
+    try:
+        print(
+            i18n("Fetching subscription... timeout={} UA={}").format(
+                args.timeout, args.user_agent
+            )
         )
-    )
+        sub_doc = fetch_yaml(args.url, args.timeout, args.user_agent)
+    except e:
+        fatal(i18n("Tried to fetch subscription config, but {}").format(str(e)))
+    else:
+        print(i18n("Successfully got subscription config!"))
 
-    write_yaml(base / "cache.yaml", sub_doc)
-    print(i18n("Cached subscription successfully!"))
+    # write cache
+    # try:
+    #     write_yaml(base / "cache.yaml", sub_doc)
+    # except e:
+    #     print(i18n("Cannot write subscription config to cache, because {}, skipped").format(str(e)))
+    # else:
+    #     print(i18n("Cached subscription successfully!"))
 
+    # merge and write final config
     merged = deep_merge(mihomo_cfg, sub_doc)
-    write_yaml(base / "config.yaml", merged)
-    print(i18n("mihomo configuration updated successfully!"))
+    try:
+        write_yaml(base / "config.yaml", merged)
+    except e:
+        fatal(i18n("Cannot write merged configuration, because {}").format(str(e)))
+    else:
+        print(i18n("mihomo configuration updated successfully!"))
 
 
 if __name__ == "__main__":

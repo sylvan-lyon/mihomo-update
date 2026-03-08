@@ -23,7 +23,7 @@ pub struct Args {
     pub timeout: u64,
 
     #[arg(long, default_value = "clash-verge/v2.4.6")]
-    #[arg(help = t!("cli.arg.user-agent.help"), long_help = t!("cli.arg.user-agent.help"))]
+    #[arg(help = t!("cli.arg.user-agent.help"), long_help = t!("cli.arg.user-agent.long_help"))]
     pub user_agent: String,
 
     #[arg(long)]

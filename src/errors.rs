@@ -37,9 +37,9 @@ impl Display for AppError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Self(msg, when) = self;
         if let Some(when) = when {
-            f.write_str(&t!("errors.fmt %{msg} %{when}", msg = msg, when = when))
+            f.write_str(&t!("errors.fmt.with-context", msg = msg, context = when))
         } else {
-            f.write_str(&t!("errors.fmt %{msg}", msg = msg,))
+            f.write_str(&t!("errors.fmt.without-context", msg = msg,))
         }
     }
 }

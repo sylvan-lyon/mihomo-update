@@ -48,3 +48,67 @@ cli.arg.user-agent.long_help:
   zh-CN: |-
     请求订阅时使用的自定义 HTTP User-Agent。
     某些订阅服务可能要求特定的 User-Agent。
+
+errors.network.body:
+  en: "failed to read response body"
+  zh-CN: "读取响应内容失败"
+
+errors.network.builder:
+  en: "failed to build HTTP request"
+  zh-CN: "构建 HTTP 请求失败"
+
+errors.network.decode:
+  en: "failed to decode response"
+  zh-CN: "无法解析 HTTP 相应"
+
+errors.network.redirect:
+  en: "too many redirects"
+  zh-CN: "HTTP 重定向次数过多"
+
+errors.network.request:
+  en: "request failed"
+  zh-CN: "HTTP 请求失败"
+
+errors.network.status:
+  en: "unexpected HTTP status: %{status}"
+  zh-CN: "HTTP 响应码：%{status}"
+
+errors.network.upgrade:
+  en: "protocol upgrade failed"
+  zh-CN: "HTTP 协议升级失败"
+
+errors.yaml.bad-structure:
+  en: "invalid YAML structure"
+  zh-CN: "YAML 结构不合法"
+
+process.fetch-sub:
+  en: "fetching subscription"
+  zh-CN: "获取订阅"
+
+process.read-local:
+  en: "reading local configuration"
+  zh-CN: "读取本地配置"
+
+process.save-merged:
+  en: "saving merged configuration"
+  zh-CN: "保存合并后的配置"
+
+success.fetch-sub:
+  en: "subscription fetched successfully"
+  zh-CN: "订阅获取成功"
+
+success.read-local:
+  en: "local configuration loaded"
+  zh-CN: "本地配置读取成功"
+
+success.save-merged:
+  en: "configuration saved"
+  zh-CN: "配置保存成功"
+
+"errors.fmt.without-context":
+  en: "Error: %{msg}"
+  zh-CN: "发生错误：%{msg}"
+
+"errors.fmt.with-context":
+  en: "Error while %{context}: %{msg}"
+  zh-CN: "在 %{context} 时发生错误：%{msg}"

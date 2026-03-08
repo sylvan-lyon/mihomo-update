@@ -1,0 +1,49 @@
+_version: 2
+
+cli.arg.force.help:
+  en: Force update even if cache exists
+  zh-CN: 即使存在缓存也强制更新
+
+cli.arg.force.long_help:
+  en: |-
+    Force update even if a cached subscription configuration exists.
+    This will ignore the cache file and fetch the subscription again.
+  zh-CN: |-
+    即使存在缓存的订阅配置也强制更新。
+    此选项会忽略缓存文件并重新下载订阅。
+
+cli.arg.lang.help:
+  en: Override language used for CLI messages
+  zh-CN: 指定 CLI 使用的语言
+
+cli.arg.path.help:
+  en: Path to Mihomo configuration file
+  zh-CN: Mihomo 配置文件路径
+
+cli.arg.path.long_help:
+  en: |-
+    Path to the Mihomo configuration file to update.
+    The subscription content will be written into this file.
+  zh-CN: |-
+    要更新的 Mihomo 配置文件路径。
+    订阅内容将写入此文件。
+
+cli.arg.timeout.help:
+  en: Network request timeout in seconds
+  zh-CN: 网络请求超时时间（秒）
+
+cli.arg.url.help:
+  en: Subscription URL
+  zh-CN: 订阅地址
+
+cli.arg.user-agent.help:
+  en: Custom HTTP User-Agent
+  zh-CN: 自定义 HTTP User-Agent
+
+cli.arg.user-agent.long_help:
+  en: |-
+    Custom HTTP User-Agent used when requesting the subscription.
+    Some providers require a specific User-Agent.
+  zh-CN: |-
+    请求订阅时使用的自定义 HTTP User-Agent。
+    某些订阅服务可能要求特定的 User-Agent。

@@ -1,0 +1,29 @@
+_version: 2
+cli.arg.force.help:
+  en: help
+  zh-CN: help
+cli.arg.force.wtf is this?:
+  en: wtf is this?
+  zh-CN: wtf is this?
+cli.arg.lang.help:
+  en: help
+  zh-CN: help
+cli.arg.path.help:
+  en: help
+  zh-CN: help
+cli.arg.path.wtf is this?:
+  en: wtf is this?
+  zh-CN: wtf is this?
+cli.arg.timeout.help:
+  en: help
+  zh-CN: help
+cli.arg.url.help:
+  en: help
+  zh-CN: help
+cli.arg.user-agent.help:
+  en: help
+  zh-CN: help
+cli.arg.user-agent.wtf is this?:
+  en: wtf is this?
+  zh-CN: wtf is this?
+

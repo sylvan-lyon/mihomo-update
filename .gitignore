@@ -11,3 +11,8 @@ build/
 
 # Virtual environments
 .venv
+
+
+# Added by cargo
+
+/target

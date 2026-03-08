@@ -44,6 +44,7 @@ cli.arg.user-agent.long_help:
   en: |-
     Custom HTTP User-Agent used when requesting the subscription.
     Some providers require a specific User-Agent.
+
   zh-CN: |-
     请求订阅时使用的自定义 HTTP User-Agent。
     某些订阅服务可能要求特定的 User-Agent。

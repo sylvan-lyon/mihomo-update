@@ -1,29 +1,32 @@
 _version: 2
-cli.arg.force.help:
-  en: help
-  zh-CN: help
-cli.arg.force.wtf is this?:
-  en: wtf is this?
-  zh-CN: wtf is this?
-cli.arg.lang.help:
-  en: help
-  zh-CN: help
-cli.arg.path.help:
-  en: help
-  zh-CN: help
-cli.arg.path.wtf is this?:
-  en: wtf is this?
-  zh-CN: wtf is this?
-cli.arg.timeout.help:
-  en: help
-  zh-CN: help
-cli.arg.url.help:
-  en: help
-  zh-CN: help
-cli.arg.user-agent.help:
-  en: help
-  zh-CN: help
-cli.arg.user-agent.wtf is this?:
-  en: wtf is this?
-  zh-CN: wtf is this?
+errors %{msg}:
+  en: errors %{msg}
+  zh-CN: errors %{msg}
+errors %{msg} %{when}:
+  en: errors %{msg} %{when}
+  zh-CN: errors %{msg} %{when}
+errors.network.body:
+  en: body
+  zh-CN: body
+errors.network.builder:
+  en: builder
+  zh-CN: builder
+errors.network.decode:
+  en: decode
+  zh-CN: decode
+errors.network.redirect:
+  en: redirect
+  zh-CN: redirect
+errors.network.request:
+  en: request
+  zh-CN: request
+errors.network.status:
+  en: status
+  zh-CN: status
+errors.network.upgrade:
+  en: upgrade
+  zh-CN: upgrade
+errors.yaml.bad-structure:
+  en: bad-structure
+  zh-CN: bad-structure
 

@@ -20,7 +20,7 @@ pub struct Args {
 
     #[arg(long, default_value = "60")]
     #[arg(help = timeout::HELP.to_owned())]
-    pub timeout: usize,
+    pub timeout: u64,
 
     #[arg(long, default_value = "clash-verge/v2.4.6")]
     #[arg(help = user_agent::HELP.to_owned(), long_help = user_agent::LONG_HELP.to_owned())]

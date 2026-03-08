@@ -4,12 +4,9 @@ extern crate rust_i18n;
 mod args;
 mod helper;
 
-use std::time::Duration;
-
 use clap::Parser;
-use reqwest::Client;
 
-use crate::args::Args;
+use crate::{args::Args, helper::fetch_sub};
 
 rust_i18n::i18n!("locales", fallback = "en");
 pub type Translated = Cow<'static, str>;
@@ -24,14 +21,7 @@ async fn run(
         lang: _,
     }: Args,
 ) {
-    let resp = Client::new()
-        .get(url)
-        .header("User-Agent", user_agent)
-        .timeout(Duration::new(timeout, 0))
-        .send()
-        .await.unwrap();
-
-    println!("{}", resp.text().await.unwrap())
+    fetch_sub(url, timeout, user_agent).await;
 }
 
 #[tokio::main]

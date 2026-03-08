@@ -8,8 +8,11 @@ use std::{
 use crate::{
     AppResult, SkippableResult,
     args::Args,
-    errors::{ResultExt, Skippable},
-    helper::{self, cache_file, config_file, merge_yaml, read_yaml, remote_yaml, server_file, update_file, write_yaml},
+    errors::ResultExt,
+    helper::{
+        self, cache_file, config_file, merge_yaml, read_yaml, fetch_yaml, server_file,
+        update_file, write_yaml,
+    },
 };
 
 pub async fn run(
@@ -43,6 +46,38 @@ pub async fn run(
         .celebrate(t!("success.save-merged"))
 }
 
+fn fetch_and_cache<'a>(
+    base: impl AsRef<Path> + 'a,
+    url: &'a str,
+    timeout: u64,
+    ua: &'a str,
+) -> Pin<Box<dyn Future<Output = AppResult<serde_yml::Value>> + 'a>> {
+    Box::pin(async move {
+        let remote_yaml = remote_yaml(url, timeout, ua).await?;
+        let (_, _) = tokio::join!(write_cache(&base, &remote_yaml), record_update(&base),);
+
+        Ok(remote_yaml)
+    })
+}
+
+fn try_read_from_cache<'a>(
+    base: impl AsRef<Path> + 'a,
+    url: &'a str,
+    timeout: u64,
+    ua: &'a str,
+) -> Pin<Box<dyn Future<Output = AppResult<serde_yml::Value>> + 'a>> {
+    Box::pin(async move {
+        if time_to_update(&base).await {
+            fetch_and_cache(base, url, timeout, ua).await
+        } else {
+            match read_cache(&base).await {
+                Err(_) => fetch_and_cache(base, url, timeout, ua).await,
+                Ok(cache) => Ok(cache),
+            }
+        }
+    })
+}
+
 async fn time_to_update(base: impl AsRef<Path>) -> bool {
     let path = update_file(&base);
     let yaml = read_yaml(&path).await.context(t!("process.record-update"));
@@ -63,82 +98,58 @@ async fn time_to_update(base: impl AsRef<Path>) -> bool {
     }
 }
 
-async fn record_update(base: impl AsRef<Path>) -> SkippableResult {
+async fn record_update(base: impl AsRef<Path>) {
     let path = update_file(&base);
-    let yaml = read_yaml(&path).await.context(t!("process.record-update"));
+    let ctx = t!("process.record-update");
 
-    let yaml = if let Ok(mut yaml) = yaml
-        && yaml.get("updated_at").is_some()
-    {
-        yaml["updated_at"] = serde_yml::Value::from(Local::now().to_rfc3339());
-        yaml
-    } else {
+    let yaml = read_yaml(&path).await.context(ctx.clone());
+
+    fn get_new_yaml() -> serde_yml::Value {
         let mut yaml = serde_yml::Mapping::new();
         yaml.insert("updated_at".into(), Local::now().to_rfc3339().into());
         serde_yml::Value::Mapping(yaml)
+    }
+
+    let yaml = match yaml {
+        Ok(mut yaml) if yaml.get("updated_at").is_some() => {
+            yaml["updated_at"] = serde_yml::Value::from(Local::now().to_rfc3339());
+            yaml
+        }
+        Err(e) => {
+            let _ = SkippableResult::Err(e)
+                .context(ctx.clone())
+                .print();
+            get_new_yaml()
+        }
+        _ => get_new_yaml(),
     };
 
-    write_yaml(&path, &yaml).await
+    let _ = write_yaml(&path, &yaml)
+        .await
+        .context(ctx.clone())
+        .print();
 }
 
-fn fetch_and_cache<'a>(
-    base: impl AsRef<Path> + 'a,
-    url: &'a str,
-    timeout: u64,
-    ua: &'a str,
-) -> Pin<Box<dyn Future<Output = AppResult<serde_yml::Value>> + 'a>> {
-    Box::pin(async move {
-        let remote_yaml = remote_yaml(url, timeout, ua)
-            .await
-            .context(t!("process.fetch-sub"))
-            .celebrate(t!("success.fetch-sub"))?;
-
-        let (cache_res, record_res) = tokio::join!(
-            write_yaml(cache_file(&base), &remote_yaml),
-            record_update(&base),
-        );
-
-        cache_res
-            .context(t!("process.re-cache"))
-            .celebrate(t!("success.re-cache"))
-            .skip_and_print();
-
-        record_res
-            .context(t!("process.record-update"))
-            .celebrate(t!("success.record-update"))
-            .skip_and_print();
-
-        Ok(remote_yaml)
-    })
+async fn remote_yaml(url: &str, timeout: u64, ua: &str) -> AppResult<serde_yml::Value> {
+    fetch_yaml(url, timeout, ua)
+        .await
+        .context(t!("process.fetch-sub"))
+        .celebrate(t!("success.fetch-sub"))
+        .print()
 }
 
-fn try_read_from_cache<'a>(
-    base: impl AsRef<Path> + 'a,
-    url: &'a str,
-    timeout: u64,
-    ua: &'a str,
-) -> Pin<Box<dyn Future<Output = AppResult<serde_yml::Value>> + 'a>> {
-    Box::pin(async move {
-        if time_to_update(&base).await {
-            fetch_and_cache(base, url, timeout, ua)
-                .await
-                .context(t!("process.re-cache"))
-        } else {
-            let cache_res = read_yaml(cache_file(&base))
-                .await
-                .context(t!("process.read-cache"))
-                .celebrate(t!("success.read-cache"));
+async fn write_cache(base: impl AsRef<Path>, value: &serde_yml::Value) {
+    let _ = write_yaml(cache_file(&base), &value)
+        .await
+        .context(t!("process.re-cache"))
+        .celebrate(t!("success.re-cache"))
+        .print();
+}
 
-            if let Err(e) = cache_res {
-                SkippableResult::Err(e).skip_and_print();
-
-                fetch_and_cache(base, url, timeout, ua)
-                    .await
-                    .context(t!("process.re-cache"))
-                    .celebrate(t!("success.re-cache"))
-            } else {
-                cache_res
-            }
-        }
-    })
+async fn read_cache(base: impl AsRef<Path>) -> AppResult<serde_yml::Value> {
+    read_yaml(cache_file(&base))
+        .await
+        .context(t!("process.read-cache"))
+        .celebrate(t!("success.read-cache"))
+        .print()
 }

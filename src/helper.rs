@@ -21,7 +21,7 @@ pub fn config_file(base: impl AsRef<Path>) -> PathBuf {
     base.as_ref().join("config.yaml")
 }
 
-pub async fn remote_yaml(url: &str, timeout: u64, user_agent: &str) -> AppResult<serde_yml::Value> {
+pub async fn fetch_yaml(url: &str, timeout: u64, user_agent: &str) -> AppResult<serde_yml::Value> {
     let resp = Client::new()
         .get(url)
         .header("User-Agent", user_agent)

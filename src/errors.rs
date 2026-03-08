@@ -1,20 +1,17 @@
 use std::fmt::Display;
 
-use crate::{AppResult, Translated};
+use crate::Translated;
 
 pub trait ResultExt<T> {
-    fn context(self, ctx: Translated) -> Result<T, AppError>;
-    fn celebrate(self, msg: Translated) -> Result<T, AppError>;
-}
-
-pub trait Skippable {
-    fn skip_and_print(self);
+    fn context(self, ctx: Translated) -> Self;
+    fn celebrate(self, msg: Translated) -> Self;
+    fn print(self) -> Self;
 }
 
 impl<T> ResultExt<T> for Result<T, AppError> {
     /// 此函数可以轻松的添加上下文信息
     #[inline]
-    fn context(self, ctx: Translated) -> Result<T, AppError> {
+    fn context(self, ctx: Translated) -> Self {
         match self {
             Err(mut e) => Err({
                 e.context = Some(ctx);
@@ -26,20 +23,19 @@ impl<T> ResultExt<T> for Result<T, AppError> {
 
     /// 成功了就庆祝一下
     #[inline]
-    fn celebrate(self, msg: Translated) -> Result<T, AppError> {
+    fn celebrate(self, msg: Translated) -> Self {
         if self.is_ok() {
             println!("{msg}");
         }
         self
     }
-}
 
-impl Skippable for AppResult<()> {
-    fn skip_and_print(self) {
-        if let Err(mut e) = self {
+    fn print(self) -> Self {
+        self.map_err(|mut e| {
             e.skippable = true;
-            println!("{e}")
-        }
+            println!("{e}");
+            e
+        })
     }
 }
 

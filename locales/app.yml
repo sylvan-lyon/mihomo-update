@@ -105,10 +105,46 @@ success.save-merged:
   en: "configuration saved"
   zh-CN: "配置保存成功"
 
-"errors.fmt.without-context":
+info.too-long-since-last-update:
+  en: cache expired, refreshing subscription
+  zh-CN: 缓存已过期，重新获取订阅
+
+process.re-cache:
+  en: rebuilding cache
+  zh-CN: 重建缓存
+
+process.read-cache:
+  en: reading cache
+  zh-CN: 读取缓存
+
+process.record-update:
+  en: recording update time
+  zh-CN: 记录更新时间
+
+success.re-cache:
+  en: cache rebuilt
+  zh-CN: 缓存重建完成
+
+success.read-cache:
+  en: cache loaded
+  zh-CN: 缓存读取完成
+
+success.record-update:
+  en: update time recorded
+  zh-CN: 更新时间记录完成
+
+errors.fmt.with-context.fatal:
+  en: "Error while %{context}: %{msg}, skipped"
+  zh-CN: "在 %{context} 时发生错误：%{msg}"
+
+errors.fmt.with-context.skippable:
+  en: "Error while %{context}: %{msg}"
+  zh-CN: "在 %{context} 时发生错误：%{msg}，跳过此步骤"
+
+errors.fmt.without-context.fatal:
   en: "Error: %{msg}"
   zh-CN: "发生错误：%{msg}"
 
-"errors.fmt.with-context":
-  en: "Error while %{context}: %{msg}"
-  zh-CN: "在 %{context} 时发生错误：%{msg}"
+errors.fmt.without-context.skippable:
+  en: "Error: %{msg}, skipped"
+  zh-CN: "发生错误：%{msg}，跳过此步骤"

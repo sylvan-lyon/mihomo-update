@@ -1,8 +1,23 @@
 _version: 2
-errors.fmt %{msg}:
-  en: fmt %{msg}
-  zh-CN: fmt %{msg}
-errors.fmt %{msg} %{when}:
-  en: fmt %{msg} %{when}
-  zh-CN: fmt %{msg} %{when}
+info.too-long-since-last-update:
+  en: too-long-since-last-update
+  zh-CN: too-long-since-last-update
+process.re-cache:
+  en: re-cache
+  zh-CN: re-cache
+process.read-cache:
+  en: read-cache
+  zh-CN: read-cache
+process.record-update:
+  en: record-update
+  zh-CN: record-update
+success.re-cache:
+  en: re-cache
+  zh-CN: re-cache
+success.read-cache:
+  en: read-cache
+  zh-CN: read-cache
+success.record-update:
+  en: record-update
+  zh-CN: record-update
 

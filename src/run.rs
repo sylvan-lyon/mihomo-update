@@ -6,12 +6,12 @@ use std::{
 };
 
 use crate::{
-    AppResult, SkippableResult,
+    AppResult, Skippable,
     args::Args,
     errors::ResultExt,
     helper::{
-        self, cache_file, config_file, merge_yaml, read_yaml, fetch_yaml, server_file,
-        update_file, write_yaml,
+        self, cache_file, config_file, fetch_yaml, merge_yaml, read_yaml, server_file, update_file,
+        write_yaml,
     },
 };
 
@@ -54,7 +54,7 @@ fn fetch_and_cache<'a>(
 ) -> Pin<Box<dyn Future<Output = AppResult<serde_yml::Value>> + 'a>> {
     Box::pin(async move {
         let remote_yaml = remote_yaml(url, timeout, ua).await?;
-        let (_, _) = tokio::join!(write_cache(&base, &remote_yaml), record_update(&base),);
+        let (_, _) = tokio::join!(write_cache(&base, &remote_yaml), record_update(&base));
 
         Ok(remote_yaml)
     })
@@ -98,7 +98,7 @@ async fn time_to_update(base: impl AsRef<Path>) -> bool {
     }
 }
 
-async fn record_update(base: impl AsRef<Path>) {
+async fn record_update(base: impl AsRef<Path>) -> Skippable<()> {
     let path = update_file(&base);
     let ctx = t!("process.record-update");
 
@@ -116,18 +116,16 @@ async fn record_update(base: impl AsRef<Path>) {
             yaml
         }
         Err(e) => {
-            let _ = SkippableResult::Err(e)
-                .context(ctx.clone())
-                .print();
+            let _ = Skippable::<()>::Err(e).context(ctx.clone()).or_skip_print();
             get_new_yaml()
         }
         _ => get_new_yaml(),
     };
 
-    let _ = write_yaml(&path, &yaml)
+    write_yaml(&path, &yaml)
         .await
         .context(ctx.clone())
-        .print();
+        .or_skip_print()
 }
 
 async fn remote_yaml(url: &str, timeout: u64, ua: &str) -> AppResult<serde_yml::Value> {
@@ -135,21 +133,21 @@ async fn remote_yaml(url: &str, timeout: u64, ua: &str) -> AppResult<serde_yml::
         .await
         .context(t!("process.fetch-sub"))
         .celebrate(t!("success.fetch-sub"))
-        .print()
+        .or_skip_print()
 }
 
-async fn write_cache(base: impl AsRef<Path>, value: &serde_yml::Value) {
-    let _ = write_yaml(cache_file(&base), &value)
+async fn write_cache(base: impl AsRef<Path>, value: &serde_yml::Value) -> Skippable<()> {
+    write_yaml(cache_file(&base), value)
         .await
         .context(t!("process.re-cache"))
         .celebrate(t!("success.re-cache"))
-        .print();
+        .or_skip_print()
 }
 
-async fn read_cache(base: impl AsRef<Path>) -> AppResult<serde_yml::Value> {
+async fn read_cache(base: impl AsRef<Path>) -> Skippable<serde_yml::Value> {
     read_yaml(cache_file(&base))
         .await
         .context(t!("process.read-cache"))
         .celebrate(t!("success.read-cache"))
-        .print()
+        .or_skip_print()
 }

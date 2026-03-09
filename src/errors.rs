@@ -5,7 +5,7 @@ use crate::Translated;
 pub trait ResultExt<T> {
     fn context(self, ctx: Translated) -> Self;
     fn celebrate(self, msg: Translated) -> Self;
-    fn print(self) -> Self;
+    fn or_skip_print(self) -> Self;
 }
 
 impl<T> ResultExt<T> for Result<T, AppError> {
@@ -30,7 +30,7 @@ impl<T> ResultExt<T> for Result<T, AppError> {
         self
     }
 
-    fn print(self) -> Self {
+    fn or_skip_print(self) -> Self {
         self.map_err(|mut e| {
             e.skippable = true;
             println!("{e}");

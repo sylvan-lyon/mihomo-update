@@ -35,6 +35,7 @@ fn init_locale() {
             && let Some(locale) = args.next()
         {
             rust_i18n::set_locale(&locale);
+            return;
         }
     }
 }

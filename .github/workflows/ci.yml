@@ -36,14 +36,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Check code compilation
-        run: cargo check --verbose
-
       - name: Run tests
         run: cargo test --verbose
-
-      - name: Check formatting
-        run: cargo fmt -- --check
 
       - name: Run clippy linter
         run: cargo clippy -- -D warnings

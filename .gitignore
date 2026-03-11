@@ -16,3 +16,36 @@ build/
 # Added by cargo
 
 /target
+
+# Go build artifacts
+mihomo-update
+*.exe
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+output/
+go.work
+go.work.sum
+vendor/
+*.test
+*.out
+coverage.txt
+coverage.html
+profile.out
+
+# Environment files
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,91 @@
+# mihomo-update 示例配置文件
+# 将此文件复制为config.yaml并根据需要修改
+
+# 必需：用于获取配置的订阅URL
+subscription_url: "https://example.com/subscription.yaml"
+
+# 必需：本地Clash/Mihomo配置文件的路径
+config_path: "/path/to/your/config.yaml"
+
+# 合并策略：keep、keepall或force
+merge_strategy: "keep"
+
+# HTTP超时时间（秒）
+http_timeout: 60
+
+# HTTP请求的User-Agent标头
+user_agent: "clash-verge/v2.4.6"
+
+# 即使缓存存在也强制更新
+force_update: false
+
+# 缓存过期时间（小时，0表示禁用缓存）
+cache_expiration: 24
+
+# CLI消息的语言：en或zh-CN
+language: "en"
+
+# 高级设置（可选）
+advanced:
+  # HTTP请求的最大重试次数
+  max_retries: 3
+  
+  # 重试延迟（秒，使用指数退避）
+  retry_delay: 2
+  
+  # 启用调试日志记录
+  debug: false
+  
+  # 输出文件路径（默认：config_path加.merged后缀）
+  output_path: ""
+  
+  # 合并前备份原始文件
+  backup: true
+  
+  # 合并后验证配置
+  validate: true
+
+# 代理设置（可选）
+proxy:
+  # HTTP代理URL
+  http: ""
+  
+  # HTTPS代理URL  
+  https: ""
+  
+  # SOCKS5代理URL
+  socks5: ""
+  
+  # 对这些主机绕过代理
+  no_proxy: "localhost,127.0.0.1"
+
+# 缓存设置（可选）
+cache:
+  # 缓存目录（默认：~/.cache/mihomo-update）
+  directory: ""
+  
+  # 最大缓存大小（MB）
+  max_size: 100
+  
+  # 启动时清理旧缓存条目
+  cleanup_on_start: true
+
+# 多订阅URL示例（尚不支持）
+# subscriptions:
+#   - url: "https://example.com/sub1.yaml"
+#     strategy: "keep"
+#   - url: "https://example.com/sub2.yaml"  
+#     strategy: "force"
+
+# 配置最佳实践：
+# 1. 对敏感数据（令牌、密码）使用环境变量
+#    示例：subscription_url: "${SUBSCRIPTION_URL}"
+# 2. 尽可能使用相对路径以提高可移植性
+# 3. 为配置添加注释以便将来参考
+# 4. 对config.yaml进行版本控制（但排除机密信息）
+# 5. 首先在安全环境中测试配置更改
+
+# 环境变量支持：
+# 所有配置选项都可以通过环境变量设置：
+# MIHOMO_SUBSCRIPTION_URL、MIHOMO_CONFIG_PATH等。
+# 环境变量优先于配置文件值。

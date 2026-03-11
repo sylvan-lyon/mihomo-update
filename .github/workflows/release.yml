@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build for ${{ matrix.platform.os }}
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      matrix:
+        platform:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: ''
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: '.exe'
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            suffix: ''
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add target
+        run: rustup target add ${{ matrix.platform.target }}
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ matrix.platform.target }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.platform.target }}-
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.platform.target }} --verbose
+
+      - name: Verify binary exists
+        run: |
+          echo "Checking for binary at: target/${{ matrix.platform.target }}/release/mihomo-update${{ matrix.platform.suffix }}"
+          ls -la target/${{ matrix.platform.target }}/release/mihomo-update${{ matrix.platform.suffix }} || echo "Binary not found"
+          ls -la target/${{ matrix.platform.target }}/release/ || echo "Release directory not found"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mihomo-update-${{ matrix.platform.target }}
+          path: 'target/${{ matrix.platform.target }}/release/mihomo-update${{ matrix.platform.suffix }}'
+          retention-days: 1
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List downloaded artifacts
+        run: |
+          if [ ! -d "artifacts" ]; then
+            echo "Error: artifacts directory does not exist. Build artifacts may not have been uploaded."
+            exit 1
+          fi
+          files=$(find artifacts -type f)
+          if [ -z "$files" ]; then
+            echo "Error: No files found in artifacts directory."
+            echo "Contents of artifacts directory:"
+            ls -la artifacts/
+            exit 1
+          fi
+          echo "Found artifacts:"
+          echo "$files"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

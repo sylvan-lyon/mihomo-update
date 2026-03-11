@@ -1,4 +1,7 @@
-use std::{path::{Path, PathBuf}, time::Duration};
+use std::{
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 use clap::ValueEnum;
 use reqwest::Client;
@@ -57,11 +60,8 @@ pub async fn write_yaml(path: impl AsRef<Path>, value: &serde_yml::Value) -> App
 /// yaml merge 的策略
 #[derive(ValueEnum, Debug, Clone, Copy)]
 pub enum MergeStrategy {
-    /// 尽量保持原 yaml 的值，但是如果遇到列表，取代之
     Keep,
-    /// 完全保留 yaml 的值，如果遇到列表，追加到 old 对应值后
     KeepAll,
-    /// 如果两个 yaml 都在一个键下有值，保留 new 中的，删除原来的
     Force,
 }
 

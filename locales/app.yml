@@ -4,7 +4,7 @@ cli.arg.force.help:
   en: Force update even if cache exists
   zh-CN: 即使存在缓存也强制更新
 
-cli.arg.force.long_help:
+cli.arg.force.long-help:
   en: |-
     Force update even if a cached subscription configuration exists.
     This will ignore the cache file and fetch the subscription again.
@@ -16,11 +16,29 @@ cli.arg.lang.help:
   en: Override language used for CLI messages
   zh-CN: 指定 CLI 使用的语言
 
+cli.arg.merge-strategy.help:
+  en: Merge strategy for YAML merging
+  zh-CN: YAML 合并策略
+
+cli.arg.merge-strategy.long-help:
+  en: |-
+    Merge strategy for combining local and remote YAML configurations.
+    Available strategies:
+    - Keep: preserve local scalar values, replace sequences with remote.
+    - KeepAll: preserve local scalar values, append remote sequences.
+    - Force: override local values with remote values (recursive merge).
+  zh-CN: |-
+    合并本地和远程 YAML 配置的策略。
+    可用策略：
+    - Keep：保留本地标量值，用远程值替换序列。
+    - KeepAll：保留本地标量值，将远程序列追加到本地。
+    - Force：用远程值覆盖本地值（递归合并）。
+
 cli.arg.path.help:
   en: Path to Mihomo configuration file
   zh-CN: Mihomo 配置文件路径
 
-cli.arg.path.long_help:
+cli.arg.path.long-help:
   en: |-
     Path to the Mihomo configuration file to update.
     The subscription content will be written into this file.
@@ -40,7 +58,7 @@ cli.arg.user-agent.help:
   en: Custom HTTP User-Agent
   zh-CN: 自定义 HTTP User-Agent
 
-cli.arg.user-agent.long_help:
+cli.arg.user-agent.long-help:
   en: |-
     Custom HTTP User-Agent used when requesting the subscription.
     Some providers require a specific User-Agent.

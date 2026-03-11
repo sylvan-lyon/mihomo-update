@@ -10,7 +10,7 @@ use crate::{
     args::Args,
     errors::ResultExt,
     helper::{
-        self, cache_file, config_file, fetch_yaml, merge_yaml, read_yaml, server_file, update_file,
+        cache_file, config_file, fetch_yaml, merge_yaml, read_yaml, server_file, update_file,
         write_yaml,
     },
 };
@@ -20,6 +20,7 @@ pub async fn run(
         url,
         path,
         force,
+        merge_strategy,
         timeout,
         user_agent: ua,
         lang: _,
@@ -38,7 +39,7 @@ pub async fn run(
 
     let (remote_yaml, local_yaml) = (remote_yaml?, local_yaml?);
 
-    let merged_yaml = merge_yaml(local_yaml, remote_yaml, helper::MergeStrategy::Keep);
+    let merged_yaml = merge_yaml(local_yaml, remote_yaml, merge_strategy);
 
     write_yaml(config_file(&base), &merged_yaml)
         .await

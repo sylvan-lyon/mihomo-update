@@ -49,7 +49,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mihomo-update-${{ matrix.platform.target }}
+          name: ${{ matrix.platform.target }}
           path: target/${{ matrix.platform.target }}/release/mihomo-update${{ matrix.platform.suffix }}
           retention-days: 1
 
@@ -68,6 +68,25 @@ jobs:
 
       - name: List downloaded artifacts
         run: find artifacts -type f
+
+      - name: Rename artifacts with target prefix
+        run: |
+          for dir in artifacts/*/; do
+            if [ -d "$dir" ]; then
+              # 目录名就是 target
+              target=$(basename "$dir")
+              
+              if [ -f "$dir/mihomo-update" ]; then
+                mv "$dir/mihomo-update" "artifacts/$target-mihomo-update"
+                rmdir "$dir"
+              elif [ -f "$dir/mihomo-update.exe" ]; then
+                mv "$dir/mihomo-update.exe" "artifacts/$target-mihomo-update.exe"
+                rmdir "$dir"
+              else
+                echo "Warning: No binary found in $dir"
+              fi
+            fi
+          done
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1

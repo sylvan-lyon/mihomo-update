@@ -30,7 +30,7 @@ cargo build --release
 cargo run --release -- \\\n  --url "https://example.com/sub" \\\n  --path /path/to/config
 
 # 使用自定义选项
-cargo run --release -- \\\n  --url "https://example.com/sub" \\\n  --path /path/to/config \\\n  --force \\\n  --timeout 60 \\\n  --user-agent "clash-verge/v2.4.6"
+cargo run --release -- \\\n  --url "https://example.com/sub" \\\n  --path /path/to/config \\\n  --force \\\n  --merge-strategy keepall \\\n  --timeout 60 \\\n  --user-agent "clash-verge/v2.4.6"
 ```
 
 ## 命令行选项
@@ -40,6 +40,7 @@ cargo run --release -- \\\n  --url "https://example.com/sub" \\\n  --path /path/
 | `-u, --url SUB` | 订阅地址 |
 | `-p, --path PATH` | Mihomo 配置文件路径 |
 | `-f, --force` | 即使存在缓存也强制更新 |
+| `-M, --merge-strategy STRATEGY` | 合并策略 (keep, keepall, force) （默认: keep）|
 | `--timeout SECS` | 网络请求超时时间（秒，默认: 60）|
 | `--user-agent UA` | 自定义 HTTP User-Agent （默认: clash-verge/v2.4.6）|
 | `--lang LANG` | 指定 CLI 使用的语言 |
@@ -49,7 +50,7 @@ cargo run --release -- \\\n  --url "https://example.com/sub" \\\n  --path /path/
 1. 检查缓存是否需要更新（24 小时过期）
 2. 如果强制更新或缓存已过期，则从 URL 获取订阅
 3. 读取本地服务器配置
-4. 使用 `Keep` 策略合并配置
+4. 使用指定的合并策略合并配置（默认: `Keep`）
 5. 将合并后的配置写入输出文件
 
 ## 开发相关

@@ -32,7 +32,7 @@ The binary will be located at `target/release/mihomo_update`.
 cargo run --release -- \\n  --url "https://example.com/sub" \\n  --path /path/to/config
 
 # With custom options
-cargo run --release -- \\n  --url "https://example.com/sub" \\n  --path /path/to/config \\n  --force \\n  --timeout 60 \\n  --user-agent "clash-verge/v2.4.6"
+cargo run --release -- \\n  --url "https://example.com/sub" \\n  --path /path/to/config \\n  --force \\n  --merge-strategy keepall \\n  --timeout 60 \\n  --user-agent "clash-verge/v2.4.6"
 ```
 
 ## Command Line Options
@@ -42,6 +42,7 @@ cargo run --release -- \\n  --url "https://example.com/sub" \\n  --path /path/to
 | `-u, --url SUB` | Subscription URL to fetch configuration from |
 | `-p, --path PATH` | Path to Mihomo configuration file |
 | `-f, --force` | Force update even if cache exists |
+| `-M, --merge-strategy STRATEGY` | Merge strategy (keep, keepall, force) (default: keep) |
 | `--timeout SECS` | Network request timeout in seconds (default: 60) |
 | `--user-agent UA` | Custom HTTP User-Agent (default: clash-verge/v2.4.6) |
 | `--lang LANG` | Override language used for CLI messages |
@@ -51,7 +52,7 @@ cargo run --release -- \\n  --url "https://example.com/sub" \\n  --path /path/to
 1. Check if cache should be updated (expires after 24 hours)
 2. If forced or cache expired, fetch subscription from URL
 3. Read local server configuration
-4. Merge configurations using the `Keep` strategy
+4. Merge configurations using the specified merge strategy (default: `Keep`)
 5. Write merged configuration to output file
 
 ## Development

@@ -217,11 +217,78 @@ cargo fmt -- --check && cargo clippy -- -D warnings && cargo test
 ```
 This ensures code passes formatting, linting, and tests.
 
+## Go Project Guidelines
+
+This section provides guidelines for the Go port of mihomo-update project. The primary goal is to **learn Go best practices**, not to create a 1:1 copy of the Rust version.
+
+### Overall Principles
+
+1. **Go Idioms First**: Prioritize Go's idiomatic patterns over Rust patterns. When there's a conflict, choose the Go way.
+2. **Learning Focus**: This is a learning project for a Go beginner with intermediate Rust knowledge. Explanations should help understand Go concepts.
+3. **Progressive Complexity**: Follow the 10-stage roadmap (`ROADMAP.md`) from simple to complex concepts.
+4. **Practical Implementation**: Focus on working code that teaches real-world Go development.
+
+### Code Style
+
+1. **Formatting**: Always run `go fmt` after making changes.
+2. **Imports**: Organize imports in groups: standard library, third-party, local packages.
+3. **Naming**: Follow Go conventions:
+   - `PascalCase` for exported types and functions
+   - `camelCase` for unexported types and functions
+   - `snake_case` for tests and examples
+4. **Error Handling**: Use Go's error patterns, not Rust's `Result` pattern.
+5. **Documentation**: Use doc comments (`//`) for exported types and functions.
+
+### Error Handling Best Practices
+
+1. **Simple Errors**: Use `errors.New()` or `fmt.Errorf()` for simple errors.
+2. **Error Wrapping**: Use `fmt.Errorf()` with `%w` verb to wrap errors with context.
+3. **Custom Error Types**: Implement `Error()` and `Unwrap()` methods for custom error types.
+4. **Error Inspection**: Use `errors.Is()` and `errors.As()` for error checking.
+5. **Skippable Errors**: Use sentinel errors (e.g., `ErrSkippable`) rather than boolean flags in error types.
+
+### Concurrency Patterns
+
+1. **Goroutines**: Use goroutines for concurrent operations, but keep them simple.
+2. **Synchronization**: Use `sync.WaitGroup` for waiting on goroutines.
+3. **Error Groups**: Consider `errgroup.Group` for handling errors from multiple goroutines.
+4. **Channels**: Use channels for communication between goroutines when appropriate.
+
+### Testing
+
+1. **Table-Driven Tests**: Use table-driven tests for multiple test cases.
+2. **Test Helpers**: Create helper functions for common test setup.
+3. **Coverage**: Aim for good test coverage, especially for core logic.
+
+### Project Structure
+
+Follow standard Go project layout:
+```
+cmd/mihomo-update/     # Main application entry point
+internal/              # Private application code
+    args/              # Command-line argument parsing
+    errors/            # Error handling infrastructure
+    helper/            # Utility functions
+    run/               # Main business logic
+    i18n/              # Internationalization
+locales/               # Translation files
+```
+
+### Development Workflow
+
+1. **Build**: `go build ./cmd/mihomo-update`
+2. **Run**: `go run ./cmd/mihomo-update [args]`
+3. **Test**: `go test ./...`
+4. **Format**: `go fmt ./...`
+5. **Vet**: `go vet ./...`
+
+
+
 ## Cursor and Copilot Rules
 
 No Cursor rules (`.cursor/rules/` or `.cursorrules`) or Copilot rules (`.github/copilot-instructions.md`) are present in this repository. Follow the guidelines in this document for consistent code style.
 
-## Notes for AI Agents
+## Notes for AI Agents (Rust)
 
 - Always run `cargo fmt` after making changes to ensure consistent formatting.
 - Run `cargo clippy` to catch common mistakes before submitting code.
@@ -231,3 +298,15 @@ No Cursor rules (`.cursor/rules/` or `.cursorrules`) or Copilot rules (`.github/
 - Follow the import order outlined above.
 - Keep functions small and focused; reuse existing helper functions.
 - When in doubt, mimic the style of surrounding code.
+
+## Notes for AI Agents (Go)
+
+- Follow the Go Project Guidelines section above for Go-specific practices.
+- When creating framework files, include **detailed Chinese teaching comments** with bilingual terminology.
+- Provide **skeleton implementations** with TODO comments for the user to fill in.
+- Follow the workflow: create framework → user implements → review code → proceed to next stage.
+- Use **cobra library** for CLI parsing (not standard `flag` package).
+- Reference Rust implementation for understanding functionality, but implement in Go style.
+- Run `go fmt` after making changes.
+- Run `go test ./...` before considering a task complete.
+- Run `go vet ./...` to catch common mistakes.

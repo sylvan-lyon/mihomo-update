@@ -34,7 +34,7 @@ go 1.21
 // 使用 `go get <package>` 命令添加依赖，`go mod tidy` 会自动更新此文件
 
 // YAML 处理库 (阶段 3)
-// require gopkg.in/yaml.v3 v3.0.1
+require gopkg.in/yaml.v3 v3.0.1
 
 // HTTP 客户端增强 (阶段 4，可选)
 // require github.com/go-resty/resty/v2 v2.11.0

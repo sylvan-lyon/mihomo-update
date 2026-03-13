@@ -1,5 +1,5 @@
 // go.mod - Go 模块定义文件
-// 
+//
 // 本文件定义了 Go 模块的基本信息，包括模块路径、Go 版本和依赖项。
 // Go 模块是 Go 1.11 引入的官方依赖管理系统，替代了旧的 GOPATH 模式。
 //
@@ -33,9 +33,6 @@ go 1.21
 // 以下依赖项将在后续阶段逐步添加
 // 使用 `go get <package>` 命令添加依赖，`go mod tidy` 会自动更新此文件
 
-// 命令行解析库 (阶段 1)
-// require github.com/spf13/cobra v1.8.0
-
 // YAML 处理库 (阶段 3)
 // require gopkg.in/yaml.v3 v3.0.1
 
@@ -57,3 +54,10 @@ go 1.21
 
 // 注意：`// indirect` 注释表示间接依赖（被直接依赖的包所依赖）
 // 间接依赖通常不需要显式声明，`go mod tidy` 会自动管理
+
+require github.com/spf13/cobra v1.10.2
+
+require (
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.9 // indirect
+)

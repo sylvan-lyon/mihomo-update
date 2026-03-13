@@ -23,10 +23,12 @@ import (
 	// 标准库导入
 	"fmt"
 	"os"
+
 	// 第三方库导入 (将在后续阶段添加)
 	// "github.com/spf13/cobra"
+
 	// 内部包导入 (将在后续阶段创建)
-	// "github.com/sylvan-lyon/mihomo-update/internal/args"
+	"github.com/sylvan-lyon/mihomo-update/internal/args"
 	// "github.com/sylvan-lyon/mihomo-update/internal/run"
 	// "github.com/sylvan-lyon/mihomo-update/internal/i18n"
 )
@@ -40,8 +42,8 @@ func main() {
 	initI18n()
 
 	// 解析命令行参数 (阶段 1)
-	// 这里将调用 args.Parse() 或类似函数
-	args, err := parseArgs()
+	// 这里调用 parseArgs()，它内部使用 cobra 解析参数
+	cmdArgs, err := parseArgs()
 	if err != nil {
 		// 错误处理 (阶段 2)
 		// 后续会使用更完善的错误处理机制
@@ -50,8 +52,8 @@ func main() {
 	}
 
 	// 执行主程序逻辑 (阶段 7)
-	// 这里将调用 run.Run(args) 或类似函数
-	err = run(args)
+	// 这里将调用 run.Run(cmdArgs) 或类似函数
+	err = run(cmdArgs)
 	if err != nil {
 		// 错误处理 (阶段 2)
 		// 后续会根据错误类型决定退出码和错误信息格式
@@ -75,17 +77,19 @@ func initI18n() {
 }
 
 // parseArgs 解析命令行参数 (阶段 1)
-// 此函数将使用 flag 或 cobra 库解析命令行参数
-// 暂为占位实现，后续完善
-func parseArgs() (interface{}, error) {
-	// TODO: 实现参数解析
-	// 1. 定义参数结构体 (internal/args/args.go)
-	// 2. 使用 flag 或 cobra 解析命令行参数
-	// 3. 验证参数有效性
-	// 4. 返回解析后的参数结构体
+// 此函数使用 cobra 库解析命令行参数
+// 调用 internal/args 包中的 Parse 函数
+func parseArgs() (*args.Args, error) {
+	// 调用 args 包的 Parse 函数
+	// Parse 函数会创建 cobra.Command，添加标志，并执行解析
+	cmdArgs, err := args.Parse()
+	if err != nil {
+		// 错误可能来自 cobra 解析或参数验证
+		return nil, err
+	}
 
-	// 暂时返回空值和 nil 错误
-	return nil, nil
+	// 返回解析后的参数结构体
+	return cmdArgs, nil
 }
 
 // run 执行主程序逻辑 (阶段 7)
@@ -96,7 +100,8 @@ func parseArgs() (interface{}, error) {
 // 4. 合并配置 (阶段 5)
 // 5. 保存结果 (阶段 3)
 // 暂为占位实现，后续完善
-func run(args interface{}) error {
+// 参数类型为 *args.Args，包含所有命令行参数
+func run(cmdArgs *args.Args) error {
 	// TODO: 实现主程序逻辑
 	// 1. 并行获取远程配置和读取本地配置
 	// 2. 应用合并策略

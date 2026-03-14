@@ -38,6 +38,7 @@ import (
 	"path/filepath"
 
 	"github.com/sylvan-lyon/mihomo-update/internal/args"
+	"github.com/sylvan-lyon/mihomo-update/internal/errors"
 )
 
 // ReadYAMLFile 读取并解析 YAML 文件
@@ -57,7 +58,14 @@ import (
 //
 // 注意：返回的是通用接口，适合处理未知结构的配置数据。
 // 如果需要类型安全，请使用 ReadYAMLFileStrict。
-func ReadYAMLFile(path string) (interface{}, error) {
+//
+// 可能返回的错误：
+//   - ErrConfigNotFound: 配置文件未找到
+//   - ErrConfigPermission: 配置文件权限不足
+//   - ErrYAMLParse: YAML 解析失败
+//   - ErrYAMLFormat: YAML 格式无效
+//   - 底层文件读取错误（通过 ErrConfigReadFailed 包装）
+func ReadYAMLFile(path string) (any, error) {
 	// TODO: 实现 YAML 文件读取
 	// 提示：
 	// 1. 使用 os.ReadFile 读取文件内容
@@ -67,12 +75,14 @@ func ReadYAMLFile(path string) (interface{}, error) {
 	// 示例代码（取消注释并修改）：
 	content, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("读取文件 %s 失败: %w", path, err)
+		// 使用 errors.Wrapf 包装错误，添加上下文信息
+		return nil, errors.Wrapf(err, "读取文件 %s 失败", path)
 	}
 
-	var data interface{}
+	var data any
 	if err := yaml.Unmarshal(content, &data); err != nil {
-		return nil, fmt.Errorf("解析 YAML 文件 %s 失败: %w", path, err)
+		// 使用 errors.Wrapf 包装 YAML 解析错误
+		return nil, errors.Wrapf(err, "解析 YAML 文件 %s 失败", path)
 	}
 
 	return data, nil
@@ -85,7 +95,7 @@ func ReadYAMLFile(path string) (interface{}, error) {
 // 功能：读取 YAML 文件并解析到指定的结构体。
 // 参数：
 //   - path: 文件路径
-//   - out: 目标结构体的指针
+//   - out: 目标结构体的指针（必须是非 nil 指针）
 //
 // 返回值：
 //   - error: 读取或解析失败时返回错误
@@ -95,25 +105,30 @@ func ReadYAMLFile(path string) (interface{}, error) {
 // 如果 YAML 中有结构体中不存在的字段，会返回错误。
 //
 // 注意：结构体字段需要添加 yaml 标签，如 `yaml:"field_name"`。
-func ReadYAMLFileStrict(path string, out interface{}) error {
+//
+// 可能返回的错误：
+//   - ErrConfigNotFound: 配置文件未找到
+//   - ErrConfigPermission: 配置文件权限不足
+//   - ErrYAMLParse: YAML 解析失败
+//   - ErrYAMLFormat: YAML 格式无效
+//   - ErrYAMLType: YAML 类型不匹配（严格模式）
+//   - 底层文件读取错误（通过 ErrConfigReadFailed 包装）
+func ReadYAMLFileStrict(path string, out any) error {
 	// TODO: 实现严格模式 YAML 读取
 	// 提示：
 	// 1. 读取文件内容
 	// 2. 使用 yaml.Unmarshal 解析到 out 参数
 
-	// 示例代码（取消注释并修改）：
-	// content, err := os.ReadFile(path)
-	// if err != nil {
-	//     return fmt.Errorf("读取文件 %s 失败: %w", path, err)
-	// }
-	//
-	// if err := yaml.Unmarshal(content, out); err != nil {
-	//     return fmt.Errorf("解析 YAML 文件 %s 失败: %w", path, err)
-	// }
-	//
-	// return nil
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return errors.Wrapf(err, "读取文件 %s 失败", path)
+	}
 
-	return fmt.Errorf("未实现: ReadYAMLFileStrict")
+	if err := yaml.Unmarshal(content, out); err != nil {
+		return errors.Wrapf(err, "解析 YAML 文件 %s 失败", path)
+	}
+
+	return nil
 }
 
 // WriteYAMLFile 将数据写入 YAML 文件
@@ -131,7 +146,14 @@ func ReadYAMLFileStrict(path string, out interface{}) error {
 // 2. 使用 os.WriteFile 写入文件
 //
 // 注意：写入前会创建必要的目录结构。
-func WriteYAMLFile(path string, data interface{}) error {
+//
+// 可能返回的错误：
+//   - ErrDirCreationFailed: 创建目录失败
+//   - ErrYAMLSerialize: YAML 序列化失败
+//   - ErrConfigWriteFailed: 写入配置文件失败
+//   - os.ErrPermission: 权限不足，无法写入文件
+//   - os.ErrNoSpace: 磁盘空间不足
+func WriteYAMLFile(path string, data any) error {
 	// TODO: 实现 YAML 文件写入
 	// 提示：
 	// 1. 使用 yaml.Marshal 序列化数据
@@ -141,22 +163,20 @@ func WriteYAMLFile(path string, data interface{}) error {
 	// 示例代码（取消注释并修改）：
 	content, err := yaml.Marshal(data)
 	if err != nil {
-		return fmt.Errorf("序列化数据失败: %w", err)
+		return errors.Wrapf(err, "序列化数据失败")
 	}
 
 	// 创建目录
 	dir := filepath.Dir(path)
 	if err := EnsureDir(dir); err != nil {
-		return fmt.Errorf("创建目录 %s 失败: %w", dir, err)
+		return errors.Wrapf(err, "创建目录 %s 失败", dir)
 	}
 
 	if err := os.WriteFile(path, content, 0644); err != nil {
-		return fmt.Errorf("写入文件 %s 失败: %w", path, err)
+		return errors.Wrapf(err, "写入文件 %s 失败", path)
 	}
 
 	return nil
-
-	// return fmt.Errorf("未实现: WriteYAMLFile")
 }
 
 // MergeYAML 合并两个 YAML 数据结构
@@ -178,7 +198,7 @@ func WriteYAMLFile(path string, data interface{}) error {
 // - Force: 用远程值覆盖本地值
 //
 // 注意：此函数将在阶段 5 详细实现，这里先提供框架。
-func MergeYAML(local, remote interface{}, strategy args.MergeStrategy) (interface{}, error) {
+func MergeYAML(local, remote any, strategy args.MergeStrategy) (any, error) {
 	// TODO: 实现 YAML 合并（阶段 5）
 	// 提示：此函数将在阶段 5 实现
 	return nil, fmt.Errorf("未实现: MergeYAML")
@@ -195,18 +215,20 @@ func MergeYAML(local, remote interface{}, strategy args.MergeStrategy) (interfac
 //   - error: 解析失败时返回错误
 //
 // 注意：这是 ReadYAMLFile 的内存版本，用于测试和调试。
-func ParseYAML(content string) (interface{}, error) {
+//
+// 可能返回的错误：
+//   - ErrYAMLParse: YAML 解析失败
+//   - ErrYAMLFormat: YAML 格式无效
+func ParseYAML(content string) (any, error) {
 	// TODO: 实现 YAML 字符串解析
 	// 提示：使用 yaml.Unmarshal
 
 	// 示例代码（取消注释并修改）：
-	var data interface{}
+	var data any
 	if err := yaml.Unmarshal([]byte(content), &data); err != nil {
-		return nil, fmt.Errorf("解析 YAML 字符串失败: %w", err)
+		return nil, errors.Wrapf(err, "解析 YAML 字符串失败")
 	}
 	return data, nil
-
-	// return nil, fmt.Errorf("未实现: ParseYAML")
 }
 
 // ToYAML 将数据转换为 YAML 字符串
@@ -220,16 +242,17 @@ func ParseYAML(content string) (interface{}, error) {
 //   - error: 序列化失败时返回错误
 //
 // 注意：这是 WriteYAMLFile 的内存版本，用于测试和调试。
-func ToYAML(data interface{}) (string, error) {
+//
+// 可能返回的错误：
+//   - ErrYAMLSerialize: YAML 序列化失败
+func ToYAML(data any) (string, error) {
 	// TODO: 实现数据到 YAML 字符串的转换
 	// 提示：使用 yaml.Marshal
 
 	// 示例代码（取消注释并修改）：
 	content, err := yaml.Marshal(data)
 	if err != nil {
-		return "", fmt.Errorf("序列化数据失败: %w", err)
+		return "", errors.Wrapf(err, "序列化数据失败")
 	}
 	return string(content), nil
-
-	// return "", fmt.Errorf("未实现: ToYAML")
 }

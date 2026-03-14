@@ -33,6 +33,8 @@ package helper
 import (
 	"os"
 	// "path/filepath" // 暂时注释，将在需要时使用
+
+	"github.com/sylvan-lyon/mihomo-update/internal/errors"
 )
 
 // FileExists 检查文件是否存在
@@ -85,12 +87,21 @@ func FileExists(path string) bool {
 // 权限默认为 0755（用户可读写执行，组和其他用户可读执行）。
 //
 // 注意：如果目录已存在，os.MkdirAll 不会返回错误。
+//
+// 可能返回的错误：
+//   - os.ErrPermission: 权限不足，无法创建目录
+//   - os.ErrInvalid: 路径无效
+//   - ErrDirCreationFailed: 创建目录失败（包装底层错误）
 func EnsureDir(path string) error {
 	// TODO: 确保目录存在
 	// 提示：使用 os.MkdirAll 创建目录
 
 	// 示例代码（取消注释并修改）：
-	return os.MkdirAll(path, 0755)
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return errors.Wrapf(err, "创建目录 %s 失败", path)
+	}
+	return nil
 
 	// return nil // 待实现
 }
@@ -110,12 +121,22 @@ func EnsureDir(path string) error {
 // 对于大文件，应考虑使用带缓冲的逐行读取。
 //
 // 注意：此函数会读取整个文件到内存，不适合大文件。
+//
+// 可能返回的错误：
+//   - os.ErrNotExist: 文件不存在
+//   - os.ErrPermission: 权限不足，无法读取文件
+//   - os.ErrInvalid: 路径无效
+//   - ErrConfigReadFailed: 读取配置文件失败（包装底层错误）
 func ReadFile(path string) ([]byte, error) {
 	// TODO: 读取文件内容
 	// 提示：使用 os.ReadFile
 
 	// 示例代码（取消注释并修改）：
-	return os.ReadFile(path)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, errors.Wrapf(err, "读取文件 %s 失败", path)
+	}
+	return data, nil
 
 	// return nil, nil // 待实现
 }
@@ -135,12 +156,22 @@ func ReadFile(path string) ([]byte, error) {
 // 权限默认为 0644（用户可读写，组和其他用户可读）。
 //
 // 注意：此函数会覆盖已存在的文件。
+//
+// 可能返回的错误：
+//   - os.ErrPermission: 权限不足，无法写入文件
+//   - os.ErrInvalid: 路径无效
+//   - os.ErrNoSpace: 磁盘空间不足
+//   - ErrConfigWriteFailed: 写入配置文件失败（包装底层错误）
 func WriteFile(path string, data []byte) error {
 	// TODO: 写入文件内容
 	// 提示：使用 os.WriteFile
 
 	// 示例代码（取消注释并修改）：
-	return os.WriteFile(path, data, 0644)
+	err := os.WriteFile(path, data, 0644)
+	if err != nil {
+		return errors.Wrapf(err, "写入文件 %s 失败", path)
+	}
+	return nil
 
 	// return nil // 待实现
 }

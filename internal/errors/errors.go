@@ -28,6 +28,54 @@ import (
 // 使用 errors.Is(err, ErrSkippable) 检查错误是否可跳过。
 var ErrSkippable = errors.New("skippable error")
 
+// 文件系统相关哨兵错误
+// File system related sentinel errors
+var (
+	// ErrConfigNotFound 表示配置文件未找到
+	// ErrConfigNotFound indicates configuration file not found
+	ErrConfigNotFound = errors.New("configuration file not found")
+
+	// ErrConfigPermission 表示配置文件权限不足
+	// ErrConfigPermission indicates insufficient permissions for configuration file
+	ErrConfigPermission = errors.New("insufficient file permissions")
+
+	// ErrConfigInvalidPath 表示配置文件路径无效
+	// ErrConfigInvalidPath indicates invalid configuration file path
+	ErrConfigInvalidPath = errors.New("invalid configuration file path")
+
+	// ErrConfigReadFailed 表示读取配置文件失败
+	// ErrConfigReadFailed indicates failed to read configuration file
+	ErrConfigReadFailed = errors.New("failed to read configuration file")
+
+	// ErrConfigWriteFailed 表示写入配置文件失败
+	// ErrConfigWriteFailed indicates failed to write configuration file
+	ErrConfigWriteFailed = errors.New("failed to write configuration file")
+
+	// ErrDirCreationFailed 表示创建目录失败
+	// ErrDirCreationFailed indicates failed to create directory
+	ErrDirCreationFailed = errors.New("failed to create directory")
+)
+
+// YAML 处理相关哨兵错误
+// YAML processing related sentinel errors
+var (
+	// ErrYAMLParse 表示 YAML 解析失败
+	// ErrYAMLParse indicates YAML parsing failed
+	ErrYAMLParse = errors.New("YAML parsing failed")
+
+	// ErrYAMLFormat 表示 YAML 格式无效
+	// ErrYAMLFormat indicates invalid YAML format
+	ErrYAMLFormat = errors.New("invalid YAML format")
+
+	// ErrYAMLType 表示 YAML 类型不匹配
+	// ErrYAMLType indicates YAML type mismatch
+	ErrYAMLType = errors.New("YAML type mismatch")
+
+	// ErrYAMLSerialize 表示 YAML 序列化失败
+	// ErrYAMLSerialize indicates YAML serialization failed
+	ErrYAMLSerialize = errors.New("YAML serialization failed")
+)
+
 // AppError 是应用程序的自定义错误类型，包含原始错误和上下文信息。
 // AppError is the custom error type for the application, containing the original error and context.
 //
@@ -201,20 +249,24 @@ func YAMLError(op string, err error) error {
 // ExampleSentinelErrors 展示哨兵错误的使用。
 // ExampleSentinelErrors demonstrates sentinel error usage.
 func ExampleSentinelErrors() error {
-	// 定义应用程序特定的哨兵错误
-	var (
-		ErrConfigNotFound = errors.New("config not found")
-		ErrInvalidFormat  = errors.New("invalid format")
-	)
+	// 使用预定义的哨兵错误
+	// Using predefined sentinel errors
+	_ = ErrConfigNotFound
+	_ = ErrConfigPermission
+	_ = ErrYAMLParse
+	_ = ErrYAMLSerialize
 
 	// 使用 errors.Is 检查哨兵错误
+	// Using errors.Is to check for sentinel errors
 	// if errors.Is(err, ErrConfigNotFound) {
 	//     // 处理配置文件未找到的情况
+	//     // Handle configuration file not found case
 	// }
-
-	// 避免 "declared and not used" 错误
-	_ = ErrConfigNotFound
-	_ = ErrInvalidFormat
+	//
+	// if errors.Is(err, ErrYAMLParse) {
+	//     // 处理 YAML 解析失败
+	//     // Handle YAML parsing failure
+	// }
 
 	return nil
 }

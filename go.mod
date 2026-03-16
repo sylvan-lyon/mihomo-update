@@ -27,7 +27,7 @@ module github.com/sylvan-lyon/mihomo-update
 // Go 版本指令
 // 指定项目所需的最低 Go 版本，这里使用 1.21 以支持较新的特性
 // 注意：实际使用的 Go 版本可以高于此版本，但不能低于此版本
-go 1.21
+go 1.25.0
 
 // 依赖项声明
 // 以下依赖项将在后续阶段逐步添加
@@ -59,5 +59,5 @@ require github.com/spf13/cobra v1.10.2
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/spf13/pflag v1.0.9 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
 )

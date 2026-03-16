@@ -253,8 +253,8 @@ func HTTPError(op string, resp *http.Response, err error) error {
 	if resp != nil && resp.StatusCode >= 400 {
 		httpErr := &HTTPStatusError{
 			StatusCode: resp.StatusCode,
-			Status: resp.Status,
-			Err: err,
+			Status:     resp.Status,
+			Err:        err,
 		}
 		return Wrap(httpErr, op)
 	}

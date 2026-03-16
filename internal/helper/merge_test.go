@@ -244,7 +244,7 @@ func TestMergeStrategies(t *testing.T) {
 					t.Fatal("结果不是映射")
 				}
 
-				// Keep: 保留本地标量，用远程替换序列
+				// Keep: 保留本地值，仅在双方均为映射时递归合并
 				if m["scalar"] != "local-value" {
 					t.Errorf("Keep 策略应保留本地标量，got %v", m["scalar"])
 				}
@@ -277,23 +277,23 @@ func TestMergeStrategies(t *testing.T) {
 			},
 		},
 		{
-			name:     "KeepAll 策略",
-			strategy: args.KeepAll,
+			name:     "MergeAll 策略",
+			strategy: args.MergeAll,
 			check: func(t *testing.T, result any) {
 				m, ok := result.(map[any]any)
 				if !ok {
 					t.Fatal("结果不是映射")
 				}
 
-				// KeepAll: 保留本地标量，合并序列
+				// MergeAll: 保留本地标量值，合并序列（融合所有选项）
 				if m["scalar"] != "local-value" {
-					t.Errorf("KeepAll 策略应保留本地标量，got %v", m["scalar"])
+					t.Errorf("MergeAll 策略应保留本地标量，got %v", m["scalar"])
 				}
 
 				// 序列应该合并
 				list, ok := m["list"].([]any)
 				if !ok || len(list) != 3 {
-					t.Errorf("KeepAll 策略应合并序列，期望 3 个元素，got %v", list)
+					t.Errorf("MergeAll 策略应合并序列，期望 3 个元素，got %v", list)
 				}
 
 				// 检查嵌套

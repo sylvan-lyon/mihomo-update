@@ -6,7 +6,7 @@
 
 Rust 原项目是一个 **Mihomo/Clash 订阅更新工具**，核心功能包括：
 - 从 URL 获取 YAML 配置
-- 与本地配置合并（三种策略：Keep、KeepAll、Force）
+- 与本地配置合并（三种策略：Keep、MergeAll、Force）
 - 24小时缓存机制
 - 完整的错误处理和国际化（中英文）
 
@@ -78,7 +78,7 @@ Rust 原项目是一个 **Mihomo/Clash 订阅更新工具**，核心功能包括
 - `interface{}` 类型断言 (`value.(type)`)
 - 递归函数设计模式
 - 映射 (`map[interface{}]interface{}`) 与切片 (`[]interface{}`) 操作
-- 三种策略 (`Keep`, `KeepAll`, `Force`) 的算法差异
+- 三种策略 (`Keep`, `MergeAll`, `Force`) 的算法差异
 
 ### 阶段 6: 缓存与时间处理
 **学习目标**: `time` 包与文件系统状态检查  

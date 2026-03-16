@@ -4,8 +4,8 @@
 // 这是阶段 5 的核心内容，重点学习递归算法、类型断言和 Go 的动态类型处理。
 //
 // 三种合并策略（对应 args.MergeStrategy）:
-// 1. Keep:    保留本地标量值，用远程替换序列（数组）
-// 2. KeepAll: 保留本地标量值，将远程序列追加到本地
+// 1. Keep:    尽量保留本地值，递归合并映射
+// 2. MergeAll: 保留本地标量值，将远程序列追加到本地
 // 3. Force:   用远程值覆盖本地值（映射递归合并）
 //
 // Go 动态类型处理特点:
@@ -37,15 +37,12 @@
 package helper
 
 import (
-	"maps"
 	"fmt"
+	"maps"
 	"reflect"
-
-	// "reflect" // 将在实现 typeSwitch 函数时使用
 
 	"github.com/sylvan-lyon/mihomo-update/internal/args"
 	"github.com/sylvan-lyon/mihomo-update/internal/errors"
-	// "github.com/sylvan-lyon/mihomo-update/internal/errors" // 将在实现错误处理时使用
 )
 
 // mergeYAML 合并两个 YAML 数据结构
@@ -54,7 +51,7 @@ import (
 // 参数：
 //   - local: 本地 YAML 数据
 //   - remote: 远程 YAML 数据
-//   - strategy: 合并策略（Keep, KeepAll, Force）
+//   - strategy: 合并策略（Keep, MergeAll, Force）
 //
 // 返回值：
 //   - any: 合并后的数据
@@ -68,32 +65,24 @@ import (
 //   - ErrYAMLType: YAML 类型不匹配（如尝试合并映射和序列）
 //   - 递归过程中可能出现的其他错误
 func mergeYAML(local, remote any, strategy args.MergeStrategy) (any, error) {
-	// TODO: 实现 YAML 合并的主调度函数
-	// 提示：
-	// 1. 根据 strategy 参数调用不同的合并函数
-	// 2. 处理可能的错误情况
-	// 3. 确保返回合并结果
-
-	// 示例代码框架（取消注释并修改）：
 	switch strategy {
 	case args.Keep:
-	    return mergeKeep(local, remote)
-	case args.KeepAll:
-	    return mergeKeepAll(local, remote)
+		return mergeKeep(local, remote)
+	case args.MergeAll:
+		return mergeMergeAll(local, remote)
 	case args.Force:
-	    return mergeForce(local, remote)
+		return mergeForce(local, remote)
 	default:
-	    return nil, fmt.Errorf("未知的合并策略: %v", strategy)
+		return nil, fmt.Errorf("未知的合并策略: %v", strategy)
 	}
 }
 
 // mergeKeep 实现 Keep 策略
 //
-// 功能：保留本地标量值，用远程替换序列。
+// 功能：尽量保留本地值，仅在双方均为映射时递归合并。
 // 算法规则：
 // 1. 如果 local 和 remote 都是映射：递归合并每个键
-// 2. 如果 remote 是序列：返回 remote（替换本地序列）
-// 3. 其他情况：返回 local（保留本地标量值）
+// 2. 其他情况：返回 local（保留本地值）
 //
 // 参数：
 //   - local: 本地数据
@@ -103,40 +92,25 @@ func mergeYAML(local, remote any, strategy args.MergeStrategy) (any, error) {
 //   - any: 合并后的数据
 //   - error: 合并失败时返回错误
 func mergeKeep(local, remote any) (any, error) {
-	// TODO: 实现 Keep 策略
-	// 提示：
-	// 1. 使用 typeSwitch 函数判断类型
-	// 2. 如果是映射，递归合并每个键
-	// 3. 如果是序列，返回远程值
-	// 4. 其他情况返回本地值
-
-	// 示例代码框架（取消注释并修改）：
 	localType := typeSwitch(local)
 	remoteType := typeSwitch(remote)
 
 	// 双方都是映射，递归合并
 	if localType == typeMapping && remoteType == typeMapping {
-	    return mergeMappings(local, remote, mergeKeep)
+		return mergeMappings(local, remote, mergeKeep)
 	}
-
-	// COMMENT: 为什么要远程替换本地？这里是 Keep
-	// // 远程是序列，替换本地序列
-	// if remoteType == typeSequence {
-	//     return remote, nil
-	// }
-	//
 
 	// 其他情况保留本地值
 	return local, nil
 }
 
-// mergeKeepAll 实现 KeepAll 策略
+// mergeMergeAll 实现 MergeAll 策略
 //
-// 功能：保留本地标量值，将远程序列追加到本地。
+// 功能：保留本地标量值，将远程序列追加到本地（融合所有选项）。
 // 算法规则：
 // 1. 如果 local 和 remote 都是映射：递归合并每个键
 // 2. 如果 local 和 remote 都是序列：将 remote 追加到 local
-// 3. 其他情况：返回 local（保留本地标量值）
+// 3. 其他情况：返回 local（保留本地值）
 //
 // 参数：
 //   - local: 本地数据
@@ -145,26 +119,18 @@ func mergeKeep(local, remote any) (any, error) {
 // 返回值：
 //   - any: 合并后的数据
 //   - error: 合并失败时返回错误
-func mergeKeepAll(local, remote any) (any, error) {
-	// TODO: 实现 KeepAll 策略
-	// 提示：
-	// 1. 使用 typeSwitch 函数判断类型
-	// 2. 如果是映射，递归合并每个键
-	// 3. 如果是序列，合并两个序列
-	// 4. 其他情况返回本地值
-
-	// 示例代码框架（取消注释并修改）：
+func mergeMergeAll(local, remote any) (any, error) {
 	localType := typeSwitch(local)
 	remoteType := typeSwitch(remote)
 
 	// 双方都是映射，递归合并
 	if localType == typeMapping && remoteType == typeMapping {
-	    return mergeMappings(local, remote, mergeKeepAll)
+		return mergeMappings(local, remote, mergeMergeAll)
 	}
 
 	// 双方都是序列，合并序列
 	if localType == typeSequence && remoteType == typeSequence {
-	    return mergeSequences(local, remote)
+		return mergeSequences(local, remote)
 	}
 
 	// 其他情况保留本地值
@@ -186,19 +152,12 @@ func mergeKeepAll(local, remote any) (any, error) {
 //   - any: 合并后的数据
 //   - error: 合并失败时返回错误
 func mergeForce(local, remote any) (any, error) {
-	// TODO: 实现 Force 策略
-	// 提示：
-	// 1. 使用 typeSwitch 函数判断类型
-	// 2. 如果是映射，递归合并每个键
-	// 3. 其他情况返回远程值
-
-	// 示例代码框架（取消注释并修改）：
 	localType := typeSwitch(local)
 	remoteType := typeSwitch(remote)
 
 	// 双方都是映射，递归合并
 	if localType == typeMapping && remoteType == typeMapping {
-	    return mergeMappings(local, remote, mergeForce)
+		return mergeMappings(local, remote, mergeForce)
 	}
 
 	// 其他情况返回远程值
@@ -230,31 +189,23 @@ const (
 // 使用反射（reflect）检查值的实际类型。
 // 注意：nil 被视为 typeScalar（空值）。
 func typeSwitch(v any) int {
-	// TODO: 实现类型判断
-	// 提示：
-	// 1. 使用 reflect.TypeOf(v).Kind() 获取类型种类
-	// 2. 判断是否为 map[interface{}]interface{} 或类似类型
-	// 3. 判断是否为 []interface{} 切片
-	// 4. 其他情况视为标量
-
-	// 示例代码框架（取消注释并修改）：
 	if v == nil {
-	    return typeScalar // nil 视为标量（空值）
+		return typeScalar // nil 视为标量（空值）
 	}
 
 	rt := reflect.TypeOf(v)
 
 	switch rt.Kind() {
 	case reflect.Map:
-	    // 检查是否是 map[interface{}]interface{} 或兼容类型
-	    // 注意：yaml.Unmarshal 可能返回 map[interface{}]interface{}
-	    return typeMapping
+		// 检查是否是 map[interface{}]interface{} 或兼容类型
+		// 注意：yaml.Unmarshal 可能返回 map[interface{}]interface{}
+		return typeMapping
 	case reflect.Slice, reflect.Array:
-	    // 检查是否是 []interface{} 或兼容类型
-	    return typeSequence
+		// 检查是否是 []interface{} 或兼容类型
+		return typeSequence
 	default:
-	    // 字符串、数字、布尔值等
-	    return typeScalar
+		// 字符串、数字、布尔值等
+		return typeScalar
 	}
 }
 
@@ -264,7 +215,7 @@ func typeSwitch(v any) int {
 // 参数：
 //   - localMap: 本地映射
 //   - remoteMap: 远程映射
-//   - mergeFunc: 值合并函数（如 mergeKeep, mergeKeepAll, mergeForce）
+//   - mergeFunc: 值合并函数（如 mergeKeep, mergeMergeAll, mergeForce）
 //
 // 返回值：
 //   - any: 合并后的映射
@@ -276,24 +227,15 @@ func typeSwitch(v any) int {
 // 3. 对每个键，使用 mergeFunc 合并本地和远程值
 // 4. 将结果放入新映射
 func mergeMappings(local, remote any, mergeFunc func(any, any) (any, error)) (any, error) {
-	// TODO: 实现映射合并
-	// 提示：
-	// 1. 将 local 和 remote 转换为 map[any]any
-	// 2. 创建结果映射（深拷贝本地映射）
-	// 3. 遍历远程映射的键值对
-	// 4. 对每个键，递归调用 mergeFunc 合并值
-	// 5. 将合并结果放入结果映射
-
-	// 示例代码框架（取消注释并修改）：
 	// 类型断言，确保是映射
 	localMap, ok := local.(map[any]any)
 	if !ok {
-	    return nil, errors.ErrYAMLType
+		return nil, errors.ErrYAMLType
 	}
 
 	remoteMap, ok := remote.(map[any]any)
 	if !ok {
-	    return nil, errors.ErrYAMLType
+		return nil, errors.ErrYAMLType
 	}
 
 	// 深拷贝本地映射
@@ -302,17 +244,17 @@ func mergeMappings(local, remote any, mergeFunc func(any, any) (any, error)) (an
 
 	// 合并远程映射
 	for k, remoteValue := range remoteMap {
-	    if localValue, exists := result[k]; exists {
-	        // 键存在，递归合并
-	        merged, err := mergeFunc(localValue, remoteValue)
-	        if err != nil {
-	            return nil, errors.Wrapf(err, "合并键 %v 失败", k)
-	        }
-	        result[k] = merged
-	    } else {
-	        // 键不存在，直接添加
-	        result[k] = remoteValue
-	    }
+		if localValue, exists := result[k]; exists {
+			// 键存在，递归合并
+			merged, err := mergeFunc(localValue, remoteValue)
+			if err != nil {
+				return nil, errors.Wrapf(err, "合并键 %v 失败", k)
+			}
+			result[k] = merged
+		} else {
+			// 键不存在，直接添加
+			result[k] = remoteValue
+		}
 	}
 
 	return result, nil
@@ -329,22 +271,15 @@ func mergeMappings(local, remote any, mergeFunc func(any, any) (any, error)) (an
 //   - any: 合并后的序列
 //   - error: 合并失败时返回错误
 func mergeSequences(local, remote any) (any, error) {
-	// TODO: 实现序列合并
-	// 提示：
-	// 1. 将 local 和 remote 转换为 []any
-	// 2. 创建新切片，容量为两个切片长度之和
-	// 3. 先添加本地元素，再添加远程元素
-
-	// 示例代码框架（取消注释并修改）：
 	// 类型断言，确保是切片
 	localSlice, ok := local.([]any)
 	if !ok {
-	    return nil, errors.ErrYAMLType
+		return nil, errors.ErrYAMLType
 	}
 
 	remoteSlice, ok := remote.([]any)
 	if !ok {
-	    return nil, errors.ErrYAMLType
+		return nil, errors.ErrYAMLType
 	}
 
 	// 创建新切片，合并两个切片
@@ -367,16 +302,8 @@ func mergeSequences(local, remote any) (any, error) {
 //
 // 注意：此函数是可选辅助函数，如果实现复杂可以简化或省略。
 func deepCopyValue(v any) (any, error) {
-	// TODO: 实现深拷贝（可选）
-	// 提示：
-	// 1. 根据类型递归拷贝
-	// 2. 对于映射，创建新映射并递归拷贝每个键值
-	// 3. 对于序列，创建新切片并递归拷贝每个元素
-	// 4. 对于标量，直接返回（值类型）
-
-	// 简单实现：使用序列化/反序列化
-	// 更简单的实现：直接返回 v（如果保证不修改）
-
+	// 简单实现：直接返回 v（如果保证不修改）
+	// 更复杂的实现可以使用序列化/反序列化进行深拷贝
 	return v, nil
 }
 

@@ -31,13 +31,13 @@ import (
 type MergeStrategy int
 
 const (
-	// Keep 策略：保留本地标量值，替换序列
+	// Keep 策略：尽量保留本地值，仅在双方均为映射时递归合并
 	// 对应 Rust 的 MergeStrategy::Keep
 	Keep MergeStrategy = iota
 
-	// KeepAll 策略：保留本地标量值，追加远程序列
-	// 对应 Rust 的 MergeStrategy::KeepAll
-	KeepAll
+	// MergeAll 策略：保留本地标量值，追加远程序列（融合所有选项）
+	// 对应 Rust 的 MergeStrategy::MergeAll
+	MergeAll
 
 	// Force 策略：递归覆盖本地值（映射递归合并）
 	// 对应 Rust 的 MergeStrategy::Force
@@ -51,7 +51,7 @@ func (m MergeStrategy) String() string {
 	switch m {
 	case Keep:
 		return "keep"
-	case KeepAll:
+	case MergeAll:
 		return "keepall"
 	case Force:
 		return "force"
@@ -68,7 +68,7 @@ func (m *MergeStrategy) Set(s string) error {
 	case "keep":
 		*m = Keep
 	case "keepall":
-		*m = KeepAll
+		*m = MergeAll
 	case "force":
 		*m = Force
 	default:

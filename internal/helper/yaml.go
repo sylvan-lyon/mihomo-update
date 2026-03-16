@@ -184,7 +184,7 @@ func WriteYAMLFile(path string, data any) error {
 // 参数：
 //   - local: 本地 YAML 数据
 //   - remote: 远程 YAML 数据
-//   - strategy: 合并策略（Keep, KeepAll, Force）
+//   - strategy: 合并策略（Keep, MergeAll, Force）
 //
 // 返回值：
 //   - interface{}: 合并后的数据
@@ -192,8 +192,8 @@ func WriteYAMLFile(path string, data any) error {
 //
 // 实现原理：
 // 根据策略递归合并两个数据结构。
-// - Keep: 保留本地标量值，用远程替换序列
-// - KeepAll: 保留本地标量值，将远程序列追加到本地
+// - Keep: 保留本地值, 递归替换映射
+// - MergeAll: 保留本地标量值，将远程序列追加到本地
 // - Force: 用远程值覆盖本地值
 //
 // 注意：此函数调用 merge.go 中的实际实现。

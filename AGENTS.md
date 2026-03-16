@@ -159,8 +159,8 @@ The project uses Tokio runtime. The `main` function is annotated with `#[tokio::
 
 ### Configuration Merging
 Three merge strategies are defined in `MergeStrategy` enum:
-- `Keep`: preserve local scalar values, replace sequences with remote.
-- `KeepAll`: preserve local scalar values, append remote sequences.
+- `Keep`: preserve local values, recursively merge only when both sides are mappings.
+- `MergeAll`: preserve local scalar values, append remote sequences (merge all options).
 - `Force`: override local values with remote values (recursive merge).
 Use `merge_yaml` function to apply a strategy.
 

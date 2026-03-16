@@ -32,7 +32,6 @@
 package helper
 
 import (
-	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
@@ -197,11 +196,9 @@ func WriteYAMLFile(path string, data any) error {
 // - KeepAll: 保留本地标量值，将远程序列追加到本地
 // - Force: 用远程值覆盖本地值
 //
-// 注意：此函数将在阶段 5 详细实现，这里先提供框架。
+// 注意：此函数调用 merge.go 中的实际实现。
 func MergeYAML(local, remote any, strategy args.MergeStrategy) (any, error) {
-	// TODO: 实现 YAML 合并（阶段 5）
-	// 提示：此函数将在阶段 5 实现
-	return nil, fmt.Errorf("未实现: MergeYAML")
+	return mergeYAML(local, remote, strategy)
 }
 
 // ParseYAML 解析 YAML 字符串

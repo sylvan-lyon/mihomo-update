@@ -76,6 +76,16 @@ var (
 	ErrYAMLSerialize = errors.New("YAML serialization failed")
 )
 
+// errors 模块和标准库中的 errors 模块重名了，work arround 一下
+func As(err error, target any) bool {
+	return errors.As(err, target)
+}
+
+// errors 模块和标准库中的 errors 模块重名了，work arround 一下
+func Is(err error, target error) bool {
+	return errors.Is(err, target)
+}
+
 // AppError 是应用程序的自定义错误类型，包含原始错误和上下文信息。
 // AppError is the custom error type for the application, containing the original error and context.
 //
@@ -146,6 +156,20 @@ func Wrapf(err error, format string, args ...interface{}) error {
 		return nil
 	}
 	return &AppError{Op: fmt.Sprintf(format, args...), Err: err}
+}
+
+type HTTPStatusError struct {
+	StatusCode int
+	Status     string
+	Err        error
+}
+
+func (e *HTTPStatusError) Error() string {
+	return fmt.Sprintf("HTTP %d: %s", e.StatusCode, e.Status)
+}
+
+func (e *HTTPStatusError) Unwrap() error {
+	return e.Err
 }
 
 // MarkSkippable 将错误标记为可跳过。
@@ -219,7 +243,7 @@ func IOError(op string, err error) error {
 	return Wrap(err, op)
 }
 
-// HTTPError 从 HTTP 错误创建 AppError。
+// HTTPError 从 HTTP 错误创建 AppError，这个 error 同时也是 HttpStatusError。
 // HTTPError creates an AppError from an HTTP error.
 func HTTPError(op string, resp *http.Response, err error) error {
 	if err != nil {
@@ -227,7 +251,12 @@ func HTTPError(op string, resp *http.Response, err error) error {
 	}
 
 	if resp != nil && resp.StatusCode >= 400 {
-		return NewAppError(op, fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status))
+		httpErr := &HTTPStatusError{
+			StatusCode: resp.StatusCode,
+			Status: resp.Status,
+			Err: err,
+		}
+		return Wrap(httpErr, op)
 	}
 
 	return nil

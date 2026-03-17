@@ -9,9 +9,9 @@ A Rust CLI tool for updating Clash/Mihomo subscription configurations. This tool
 - Fetch YAML configuration from subscription URLs
 - Cache subscription content to avoid unnecessary downloads
 - Merge remote and local configurations with different strategies:
-  - `Keep`: Preserve local values, replace lists with remote ones
-  - `KeepAll`: Preserve local values, append to lists
-  - `Force`: Override local values with remote ones
+  - `Keep`: Preserve local values, recursively merge mappings
+  - `MergeAll`: Preserve local values, append lists, recursively merge mappings
+  - `Force`: Override local values with remote ones (resursive merge)
 - Support for custom User-Agent headers
 - Configurable request timeout
 - Internationalization support (English and Chinese)
@@ -29,10 +29,18 @@ The binary will be located at `target/release/mihomo_update`.
 
 ```bash
 # Basic usage
-cargo run --release -- \\n  --url "https://example.com/sub" \\n  --path /path/to/config
+cargo run --release -- \
+    --url "https://example.com/sub" \
+    --path /path/to/config
 
 # With custom options
-cargo run --release -- \\n  --url "https://example.com/sub" \\n  --path /path/to/config \\n  --force \\n  --merge-strategy keepall \\n  --timeout 60 \\n  --user-agent "clash-verge/v2.4.6"
+cargo run --release -- \
+    --url "https://example.com/sub" \
+    --path /path/to/config \
+    --force \
+    --merge-strategy keepall \
+    --timeout 60 \
+    --user-agent "clash-verge/v2.4.6"
 ```
 
 ## Command Line Options

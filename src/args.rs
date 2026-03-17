@@ -1,11 +1,21 @@
 use crate::helper::MergeStrategy;
-use clap::Parser;
+use clap::{Parser, builder::styling};
 
 #[derive(Debug, Parser)]
 #[command(name = "mihomo update")]
 #[command(about = "update your clash subscription")]
 #[command(long_about = r"update your clash subscription
 and merge them with your local mihomo configuration")]
+#[command(
+    styles = styling::Styles::styled()
+    .header(styling::AnsiColor::Green.on_default().bold())
+    .usage(styling::AnsiColor::Green.on_default().bold())
+    .literal(styling::AnsiColor::Cyan.on_default().bold())
+    .placeholder(styling::AnsiColor::Cyan.on_default())
+    .error(styling::AnsiColor::Red.on_default())
+    .context(styling::AnsiColor::White.on_default())
+    .context_value(styling::AnsiColor::White.on_default().bold().underline())
+)]
 pub struct Args {
     #[arg(long, short, value_name = "SUB")]
     #[arg(help = t!("cli.arg.url.help"))]

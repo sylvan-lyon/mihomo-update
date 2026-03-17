@@ -59,17 +59,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/sylvan-lyon/mihomo-update/internal/errors"
-	// 以下导入将在实现函数时使用
-	// "encoding/json"
-	// "os"
-	// "path/filepath"
-	// "github.com/sylvan-lyon/mihomo-update/internal/errors"
 )
 
 // CacheEntry 表示一个缓存条目
@@ -121,13 +115,6 @@ const cacheTTL = 24 * time.Hour
 // 2. 将 URL 转换为安全文件名（避免特殊字符）
 // 3. 添加 .json 扩展名表明文件格式
 func GetCachePath(cacheDir, url string) (string, error) {
-	// TODO: 实现缓存路径生成
-	// 提示：
-	// 1. 使用 filepath.Join 构建路径
-	// 2. 创建缓存目录（如果不存在）
-	// 3. 将 URL 转换为安全文件名（例如使用 base64 或哈希）
-	// 4. 返回完整路径
-
 	digested := sha256.Sum256([]byte(url))
 	cacheFile := filepath.Join(cacheDir, hex.EncodeToString(digested[:])) + ".json"
 	if err := os.MkdirAll(cacheDir, 0755); err != nil {
@@ -138,7 +125,6 @@ func GetCachePath(cacheDir, url string) (string, error) {
 }
 
 // IsCacheValid 检查缓存是否有效（存在且未过期）
-//
 // 功能：检查缓存文件是否存在，且创建时间在 TTL 内。
 // 算法：
 // 1. 检查缓存文件是否存在
@@ -147,7 +133,7 @@ func GetCachePath(cacheDir, url string) (string, error) {
 // 4. 判断是否超过 cacheTTL
 //
 // 参数：
-//   - cachePath: 缓存文件路径
+//   - cacheDir: 缓存文件目录
 //   - url: 预期的订阅 URL（用于验证缓存对应正确的 URL）
 //
 // 返回值：
@@ -155,17 +141,19 @@ func GetCachePath(cacheDir, url string) (string, error) {
 //   - error: 文件操作或 JSON 解析失败时返回错误
 //
 // 注意：即使缓存无效，函数也可能返回 false 和 nil 错误。
-func IsCacheValid(cachePath, url string) (bool, error) {
-	// TODO: 实现缓存有效性检查
-	// 提示：
-	// 1. 检查文件是否存在（FileExists 函数）
-	// 2. 读取缓存文件（ReadCache 函数）
-	// 3. 验证 URL 匹配
-	// 4. 解析 CreatedAt 时间为 time.Time
-	// 5. 计算时间间隔：time.Since(createdAt)
-	// 6. 比较间隔是否小于 cacheTTL
+func IsCacheValid(cacheDir, url string) (bool, error) {
+	cachePath, err := GetCachePath(cacheDir, url)
 
-	return false, fmt.Errorf("未实现：IsCacheValid")
+	if err != nil {
+		return false, errors.Wrap(err, "在判断缓存有效性时")
+	}
+
+	age, err := GetCacheAge(cachePath)
+	if err != nil {
+		return false, errors.Wrap(err, "在判断缓存有效性时")
+	}
+
+	return age < cacheTTL, nil
 }
 
 // ReadCache 读取缓存文件
@@ -185,20 +173,11 @@ func IsCacheValid(cachePath, url string) (bool, error) {
 //
 // 注意：调用者应检查返回的 CacheEntry 是否为 nil。
 func ReadCache(cachePath string) (*CacheEntry, error) {
-	// TODO: 实现缓存读取
-	// 提示：
-	// 1. 使用 os.Open 打开文件
-	// 2. 使用 defer file.Close() 确保文件关闭
-	// 3. 使用 json.NewDecoder(file).Decode(&entry) 解析
-	// 4. 处理可能的错误（文件不存在、JSON 格式错误等）
-
-	// 提问：为什么不直接使用 os.ReadFile 和 Unmarshal 呢？
-	// 二编：应该是流式处理，在下面进行编写（被注释了）
-
 	file, err := os.Open(cachePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "在读取缓存文件时")
 	}
+	defer file.Close()
 
 	var data CacheEntry
 	if err := json.NewDecoder(file).Decode(&data); err != nil {
@@ -237,17 +216,10 @@ func ReadCache(cachePath string) (*CacheEntry, error) {
 //
 // 注意：此函数会覆盖已存在的缓存文件。
 func WriteCache(cachePath string, data any, url string) error {
-	// TODO: 实现缓存写入
-	// 提示：
-	// 1. 创建 CacheEntry，设置 Data、URL 和 CreatedAt（time.Now().Format(time.RFC3339)）
-	// 2. 使用 json.MarshalIndent 生成易读的 JSON
-	// 3. 使用 os.WriteFile 写入文件（0644 权限）
-	// 4. 处理可能的错误
-
 	cache := CacheEntry{
-		Data: data,
+		Data:      data,
 		CreatedAt: time.Now().Local().Format(time.RFC3339),
-		URL: url,
+		URL:       url,
 	}
 
 	jsonData, err := json.MarshalIndent(&cache, "", "    ")
@@ -273,27 +245,16 @@ func WriteCache(cachePath string, data any, url string) error {
 //
 // 注意：如果文件不存在，返回 nil（成功）。
 func ClearCache(cachePath string) error {
-	// TODO: 实现缓存清除
-	// 提示：
-	// 1. 检查文件是否存在（避免不必要的错误）
-	// 2. 使用 os.Remove 删除文件
-	// 3. 处理可能的错误
-
-	_, err := os.Stat(cachePath)
+	err := os.Remove(cachePath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		} else {
 			return errors.Wrap(err, "在删除缓存文件时")
 		}
+	} else {
+		return nil
 	}
-
-	err = os.Remove(cachePath)
-	if err != nil {
-		return errors.Wrap(err, "在删除缓存文件时")
-	}
-	
-	return nil
 }
 
 // GetCacheAge 获取缓存年龄（用于调试和日志）
@@ -308,12 +269,6 @@ func ClearCache(cachePath string) error {
 //
 // 注意：此函数主要用于调试和日志记录。
 func GetCacheAge(cachePath string) (time.Duration, error) {
-	// TODO: 实现缓存年龄计算
-	// 提示：
-	// 1. 读取缓存条目
-	// 2. 解析 CreatedAt 时间为 time.Time
-	// 3. 计算 time.Since(createdAt)
-	// 4. 返回时间间隔
 	entry, err := ReadCache(cachePath)
 	if err != nil {
 		return 0, errors.Wrap(err, "在试图获取缓存年龄时")
@@ -323,7 +278,7 @@ func GetCacheAge(cachePath string) (time.Duration, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "在试图解析缓存的 created_at 时")
 	}
-	
+
 	return time.Since(lastUpdatedAt), nil
 }
 

@@ -24,14 +24,14 @@ cli.arg.merge-strategy.long-help:
   en: |-
     Merge strategy for combining local and remote YAML configurations.
     Available strategies:
-    - Keep: preserve local scalar values, replace sequences with remote.
-    - KeepAll: preserve local scalar values, append remote sequences.
+    - Keep: preserve scalar values with best effort, recursive merge mappdings.
+    - MergeAll: preserve scalar values, append sequences, recursive merge mappings.
     - Force: override local values with remote values (recursive merge).
   zh-CN: |-
     合并本地和远程 YAML 配置的策略。
     可用策略：
-    - Keep：保留本地标量值，用远程值替换序列。
-    - KeepAll：保留本地标量值，将远程序列追加到本地。
+    - Keep：尽量保留本地标量值，递归合并映射。
+    - MergeAll：保留本地标量值，将远程序列追加到本地，递归合并映射。
     - Force：用远程值覆盖本地值（递归合并）。
 
 cli.arg.path.help:

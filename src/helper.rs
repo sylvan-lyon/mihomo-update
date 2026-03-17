@@ -61,7 +61,7 @@ pub async fn write_yaml(path: impl AsRef<Path>, value: &serde_yml::Value) -> App
 #[derive(ValueEnum, Debug, Clone, Copy)]
 pub enum MergeStrategy {
     Keep,
-    KeepAll,
+    MergeAll,
     Force,
 }
 
@@ -72,7 +72,7 @@ pub fn merge_yaml(
 ) -> serde_yml::Value {
     match strategy {
         MergeStrategy::Keep => merge_yaml_keep(old, new),
-        MergeStrategy::KeepAll => merge_yaml_keep_all(old, new),
+        MergeStrategy::MergeAll => merge_yaml_keep_all(old, new),
         MergeStrategy::Force => merge_yaml_force(old, new),
     }
 }
@@ -94,8 +94,6 @@ pub fn merge_yaml_keep(old: serde_yml::Value, new: serde_yml::Value) -> serde_ym
             }
             Value::Mapping(old_map)
         }
-
-        (_, Value::Sequence(new_seq)) => Value::Sequence(new_seq),
 
         (old_val, _) => old_val,
     }

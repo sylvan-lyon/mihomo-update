@@ -19,20 +19,20 @@ fn test_keep_basic_mapping() {
 }
 
 #[test]
-fn test_keep_list_replace() {
+fn test_keep_local_list() {
     let old = yaml("list: [1, 2]");
     let new = yaml("list: [3, 4]");
     let result = merge_yaml(old, new, MergeStrategy::Keep);
-    let expected = yaml("list: [3, 4]"); // 列表被取代
+    let expected = yaml("list: [1, 2]");
     assert_eq!(result, expected);
 }
 
 #[test]
-fn test_keep_new_list_over_non_list() {
+fn test_keep_local_scalar_value_even_remote_is_list() {
     let old = yaml("a: 1");
     let new = yaml("a: [2, 3]");
     let result = merge_yaml(old, new, MergeStrategy::Keep);
-    let expected = yaml("a: [2, 3]"); // new 是列表，取代 old
+    let expected = yaml("a: 1");
     assert_eq!(result, expected);
 }
 
@@ -41,7 +41,7 @@ fn test_keep_old_list_preserved() {
     let old = yaml("a: [1, 2]");
     let new = yaml("a: 3");
     let result = merge_yaml(old, new, MergeStrategy::Keep);
-    let expected = yaml("a: [1, 2]"); // new 不是列表，保留 old
+    let expected = yaml("a: [1, 2]");
     assert_eq!(result, expected);
 }
 
@@ -50,7 +50,7 @@ fn test_keep_nested_list_replace() {
     let old = yaml("x:\n  y: [1, 2]");
     let new = yaml("x:\n  y: [3, 4]");
     let result = merge_yaml(old, new, MergeStrategy::Keep);
-    let expected = yaml("x:\n  y: [3, 4]"); // 替换为新的，应为 x.y = [3, 4]
+    let expected = yaml("x:\n  y: [1, 2]");
     assert_eq!(result, expected);
 }
 
@@ -63,12 +63,12 @@ fn test_keep_type_mismatch() {
     assert_eq!(result, expected);
 }
 
-// ========== MergeStrategy::KeepAll 测试 ==========
+// ========== MergeStrategy::MergeAll 测试 ==========
 #[test]
 fn test_keepall_basic_mapping() {
     let old = yaml("a: 1\nb: 2");
     let new = yaml("b: 3\nc: 4");
-    let result = merge_yaml(old, new, MergeStrategy::KeepAll);
+    let result = merge_yaml(old, new, MergeStrategy::MergeAll);
     let expected = yaml("a: 1\nb: 2\nc: 4"); // b 保留旧值
     assert_eq!(result, expected);
 }
@@ -77,7 +77,7 @@ fn test_keepall_basic_mapping() {
 fn test_keepall_list_append() {
     let old = yaml("list: [1, 2]");
     let new = yaml("list: [3, 4]");
-    let result = merge_yaml(old, new, MergeStrategy::KeepAll);
+    let result = merge_yaml(old, new, MergeStrategy::MergeAll);
     let expected = yaml("list: [1, 2, 3, 4]"); // 追加
     assert_eq!(result, expected);
 }
@@ -86,7 +86,7 @@ fn test_keepall_list_append() {
 fn test_keepall_nested_list_append() {
     let old = yaml("x:\n  list: [1, 2]");
     let new = yaml("x:\n  list: [3, 4]");
-    let result = merge_yaml(old, new, MergeStrategy::KeepAll);
+    let result = merge_yaml(old, new, MergeStrategy::MergeAll);
     let expected = yaml("x:\n  list: [1, 2, 3, 4]");
     assert_eq!(result, expected);
 }
@@ -95,7 +95,7 @@ fn test_keepall_nested_list_append() {
 fn test_keepall_new_list_but_old_not_list() {
     let old = yaml("a: 1");
     let new = yaml("a: [2, 3]");
-    let result = merge_yaml(old, new, MergeStrategy::KeepAll);
+    let result = merge_yaml(old, new, MergeStrategy::MergeAll);
     let expected = yaml("a: 1"); // 不能追加，保留旧值
     assert_eq!(result, expected);
 }
@@ -104,7 +104,7 @@ fn test_keepall_new_list_but_old_not_list() {
 fn test_keepall_old_list_but_new_not_list() {
     let old = yaml("a: [1, 2]");
     let new = yaml("a: 3");
-    let result = merge_yaml(old, new, MergeStrategy::KeepAll);
+    let result = merge_yaml(old, new, MergeStrategy::MergeAll);
     let expected = yaml("a: [1, 2]"); // 保留旧列表
     assert_eq!(result, expected);
 }
@@ -113,7 +113,7 @@ fn test_keepall_old_list_but_new_not_list() {
 fn test_keepall_multiple_lists() {
     let old = yaml("list: [1, 2]");
     let new = yaml("list: [3, 4]\nother: [5]");
-    let result = merge_yaml(old, new, MergeStrategy::KeepAll);
+    let result = merge_yaml(old, new, MergeStrategy::MergeAll);
     let expected = yaml("list: [1, 2, 3, 4]\nother: [5]");
     assert_eq!(result, expected);
 }

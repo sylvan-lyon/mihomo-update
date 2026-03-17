@@ -7,8 +7,8 @@ use clap::Parser;
 #[command(long_about = r"update your clash subscription
 and merge them with your local mihomo configuration")]
 pub struct Args {
-    #[arg(long, short)]
-    #[arg(value_name = "SUB", help = t!("cli.arg.url.help"))]
+    #[arg(long, short, value_name = "SUB")]
+    #[arg(help = t!("cli.arg.url.help"))]
     pub url: String,
 
     #[arg(long, short, value_name = "PATH")]

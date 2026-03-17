@@ -36,7 +36,7 @@ cargo run --release -- \
     --url "https://example.com/sub" \
     --path /path/to/config \
     --force \
-    --merge-strategy keepall \
+    --merge-strategy merge-all \
     --timeout 60 \
     --user-agent "clash-verge/v2.4.6"
 ```

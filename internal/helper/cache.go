@@ -56,8 +56,15 @@
 package helper
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
+
+	"github.com/sylvan-lyon/mihomo-update/internal/errors"
 	// 以下导入将在实现函数时使用
 	// "encoding/json"
 	// "os"
@@ -121,7 +128,13 @@ func GetCachePath(cacheDir, url string) (string, error) {
 	// 3. 将 URL 转换为安全文件名（例如使用 base64 或哈希）
 	// 4. 返回完整路径
 
-	return "", fmt.Errorf("未实现：GetCachePath")
+	digested := sha256.Sum256([]byte(url))
+	cacheFile := filepath.Join(cacheDir, hex.EncodeToString(digested[:])) + ".json"
+	if err := os.MkdirAll(cacheDir, 0755); err != nil {
+		return "", errors.Wrap(err, "在创建缓存文件夹时")
+	}
+
+	return cacheFile, nil
 }
 
 // IsCacheValid 检查缓存是否有效（存在且未过期）
@@ -179,7 +192,31 @@ func ReadCache(cachePath string) (*CacheEntry, error) {
 	// 3. 使用 json.NewDecoder(file).Decode(&entry) 解析
 	// 4. 处理可能的错误（文件不存在、JSON 格式错误等）
 
-	return nil, fmt.Errorf("未实现：ReadCache")
+	// 提问：为什么不直接使用 os.ReadFile 和 Unmarshal 呢？
+	// 二编：应该是流式处理，在下面进行编写（被注释了）
+
+	file, err := os.Open(cachePath)
+	if err != nil {
+		return nil, errors.Wrap(err, "在读取缓存文件时")
+	}
+
+	var data CacheEntry
+	if err := json.NewDecoder(file).Decode(&data); err != nil {
+		return nil, errors.Wrap(err, "在解析缓存文件时")
+	}
+
+	// // 简单实现方式
+	// content, err := os.ReadFile(cachePath)
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "在读取缓存文件时")
+	// }
+	//
+	// var data CacheEntry
+	// if err = json.Unmarshal(content, &data); err != nil {
+	// 	return nil, errors.Wrap(err, "在解析缓存文件时")
+	// }
+
+	return &data, nil
 }
 
 // WriteCache 写入缓存文件
@@ -207,7 +244,22 @@ func WriteCache(cachePath string, data any, url string) error {
 	// 3. 使用 os.WriteFile 写入文件（0644 权限）
 	// 4. 处理可能的错误
 
-	return fmt.Errorf("未实现：WriteCache")
+	cache := CacheEntry{
+		Data: data,
+		CreatedAt: time.Now().Local().Format(time.RFC3339),
+		URL: url,
+	}
+
+	jsonData, err := json.MarshalIndent(&cache, "", "    ")
+	if err != nil {
+		return errors.Wrap(err, "创建缓存文件内容时")
+	}
+
+	if err := os.WriteFile(cachePath, jsonData, 0644); err != nil {
+		return errors.Wrap(err, "写入缓存文件时")
+	}
+
+	return nil
 }
 
 // ClearCache 清除缓存文件
@@ -227,7 +279,21 @@ func ClearCache(cachePath string) error {
 	// 2. 使用 os.Remove 删除文件
 	// 3. 处理可能的错误
 
-	return fmt.Errorf("未实现：ClearCache")
+	_, err := os.Stat(cachePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		} else {
+			return errors.Wrap(err, "在删除缓存文件时")
+		}
+	}
+
+	err = os.Remove(cachePath)
+	if err != nil {
+		return errors.Wrap(err, "在删除缓存文件时")
+	}
+	
+	return nil
 }
 
 // GetCacheAge 获取缓存年龄（用于调试和日志）
@@ -248,8 +314,17 @@ func GetCacheAge(cachePath string) (time.Duration, error) {
 	// 2. 解析 CreatedAt 时间为 time.Time
 	// 3. 计算 time.Since(createdAt)
 	// 4. 返回时间间隔
+	entry, err := ReadCache(cachePath)
+	if err != nil {
+		return 0, errors.Wrap(err, "在试图获取缓存年龄时")
+	}
 
-	return 0, fmt.Errorf("未实现：GetCacheAge")
+	lastUpdatedAt, err := time.Parse(time.RFC3339, entry.CreatedAt)
+	if err != nil {
+		return 0, errors.Wrap(err, "在试图解析缓存的 created_at 时")
+	}
+	
+	return time.Since(lastUpdatedAt), nil
 }
 
 // 常见问题与解决方案：

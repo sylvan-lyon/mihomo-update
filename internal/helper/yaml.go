@@ -32,13 +32,103 @@
 package helper
 
 import (
-	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+	"time"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/sylvan-lyon/mihomo-update/internal/args"
 	"github.com/sylvan-lyon/mihomo-update/internal/errors"
 )
+
+// FetchRemoteYAML 读取并解析 YAML URL
+//
+// 功能：读取指定 URL 的 YAML 文件，解析为 Go 数据结构。
+// 参数：
+//   - url: 任意 url
+//   - timeout: 超时时间
+//   - userAgent: 要添加的 User-Agent 请求头
+//
+// 返回值：
+//   - any: 解析后的数据（通常是 map[interface{}]interface{}）
+//   - error: 读取或解析失败时返回错误
+//
+// 实现步骤：
+// 1. 请求 url
+// 2. 使用 yaml.Unmarshal 解析
+// 3. 返回解析结果
+//
+// 注意：返回的是通用接口，适合处理未知结构的配置数据。
+// 如果需要类型安全，请使用 ReadYAMLFileStrict。
+//
+// 可能返回的错误：
+//   - ErrConfigNotFound: 配置文件未找到
+//   - ErrConfigPermission: 配置文件权限不足
+//   - ErrYAMLParse: YAML 解析失败
+//   - ErrYAMLFormat: YAML 格式无效
+//   - 底层文件读取错误（通过 ErrConfigReadFailed 包装）
+func FetchRemoteYAML(url string, timeout time.Duration, userAgent string) (any, error) {
+	content, err := FetchURL(url, timeout, userAgent)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "在尝试获取请求时")
+	}
+
+	var data any
+	if err := yaml.Unmarshal(content, &data); err != nil {
+		// 使用 errors.Wrapf 包装 YAML 解析错误
+		return nil, errors.Wrapf(err, "解析 YAML 文件 %s 失败", url)
+	}
+
+	return data, nil
+}
+
+
+// FetchRemoteYAML 读取并解析 YAML URL
+//
+// 功能：读取指定 URL 的 YAML 文件，解析为 Go 数据结构。
+// 参数：
+//   - url: 任意 url
+//   - timeout: 超时时间
+//   - userAgent: 要添加的 User-Agent 请求头
+//
+// 返回值：
+//   - any: 解析后的数据（通常是 map[interface{}]interface{}）
+//   - error: 读取或解析失败时返回错误
+//
+// 实现步骤：
+// 1. 请求 url
+// 2. 使用 yaml.Unmarshal 解析
+// 3. 返回解析结果
+//
+// 实现原理：
+// 使用 yaml.Unmarshal 将 YAML 解析到指定结构体。
+// 如果 YAML 中有结构体中不存在的字段，会返回错误。
+//
+// 注意：结构体字段需要添加 yaml 标签，如 `yaml:"field_name"`。
+//
+// 可能返回的错误：
+//   - ErrConfigNotFound: 配置文件未找到
+//   - ErrConfigPermission: 配置文件权限不足
+//   - ErrYAMLParse: YAML 解析失败
+//   - ErrYAMLFormat: YAML 格式无效
+//   - ErrYAMLType: YAML 类型不匹配（严格模式）
+//   - 底层文件读取错误（通过 ErrConfigReadFailed 包装）
+func FetchRemoteYAMLStrict(url string, timeout time.Duration, userAgent string, out any) (error) {
+	content, err := FetchURL(url, timeout, userAgent)
+
+	if err != nil {
+		return errors.Wrap(err, "在尝试获取请求时")
+	}
+
+	if err := yaml.Unmarshal(content, &out); err != nil {
+		// 使用 errors.Wrapf 包装 YAML 解析错误
+		return errors.Wrapf(err, "解析 YAML 文件 %s 失败", url)
+	}
+
+	return nil
+}
 
 // ReadYAMLFile 读取并解析 YAML 文件
 //
@@ -199,57 +289,4 @@ func WriteYAMLFile(path string, data any) error {
 // 注意：此函数调用 merge.go 中的实际实现。
 func MergeYAML(local, remote any, strategy args.MergeStrategy) (any, error) {
 	return mergeYAML(local, remote, strategy)
-}
-
-// ParseYAML 解析 YAML 字符串
-//
-// 功能：将 YAML 字符串解析为 Go 数据结构。
-// 参数：
-//   - content: YAML 字符串
-//
-// 返回值：
-//   - interface{}: 解析后的数据
-//   - error: 解析失败时返回错误
-//
-// 注意：这是 ReadYAMLFile 的内存版本，用于测试和调试。
-//
-// 可能返回的错误：
-//   - ErrYAMLParse: YAML 解析失败
-//   - ErrYAMLFormat: YAML 格式无效
-func ParseYAML(content string) (any, error) {
-	// TODO: 实现 YAML 字符串解析
-	// 提示：使用 yaml.Unmarshal
-
-	// 示例代码（取消注释并修改）：
-	var data any
-	if err := yaml.Unmarshal([]byte(content), &data); err != nil {
-		return nil, errors.Wrapf(err, "解析 YAML 字符串失败")
-	}
-	return data, nil
-}
-
-// ToYAML 将数据转换为 YAML 字符串
-//
-// 功能：将 Go 数据结构序列化为 YAML 字符串。
-// 参数：
-//   - data: 要序列化的数据
-//
-// 返回值：
-//   - string: YAML 字符串
-//   - error: 序列化失败时返回错误
-//
-// 注意：这是 WriteYAMLFile 的内存版本，用于测试和调试。
-//
-// 可能返回的错误：
-//   - ErrYAMLSerialize: YAML 序列化失败
-func ToYAML(data any) (string, error) {
-	// TODO: 实现数据到 YAML 字符串的转换
-	// 提示：使用 yaml.Marshal
-
-	// 示例代码（取消注释并修改）：
-	content, err := yaml.Marshal(data)
-	if err != nil {
-		return "", errors.Wrapf(err, "序列化数据失败")
-	}
-	return string(content), nil
 }

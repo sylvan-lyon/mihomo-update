@@ -1,0 +1,28 @@
+// Project-local debug tasks
+//
+// For more documentation on how to configure debug tasks,
+// see: https://zed.dev/docs/debugger
+[
+  {
+    "label": "Go (Delve)",
+    "adapter": "Delve",
+    "program": "$ZED_FILE",
+    "request": "launch",
+    "mode": "debug",
+  },
+  {
+    "label": "Run mihomo-update",
+    "adapter": "Delve",
+    "request": "launch",
+    "mode": "debug",
+    // For Delve, the program can be a package name
+    "program": "./cmd/mihomo-update",
+    "args": [
+      "--path",
+      "~/.config/mihomo",
+      "--url",
+      "https://zhuzhuzhu.whtjdasha.com/api/v1/client/subscribe?token=e9909ab90570671b711bf3ecffdf7f04",
+    ],
+    // "buildFlags": [],
+  },
+]

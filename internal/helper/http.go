@@ -53,7 +53,7 @@ const DefaultTimeout = 60 * time.Second
 // 遵循 RFC 7231 规范，格式为 "产品名/版本"
 const DefaultUserAgent = "clash-verge/v2.4.6"
 
-// FetchYAMLFromURL 从指定 URL 获取 YAML 内容
+// FetchURL 从指定 URL 获取内容
 //
 // 功能：向远程服务器发送 HTTP GET 请求，获取 YAML 配置数据。
 // 参数：
@@ -82,7 +82,7 @@ const DefaultUserAgent = "clash-verge/v2.4.6"
 //   - HTTP 错误：状态码 4xx 或 5xx
 //   - IO 错误：读取响应体失败
 //   - 超时错误：在指定时间内未完成请求
-func FetchYAMLFromURL(url string, timeout time.Duration, userAgent string) ([]byte, error) {
+func FetchURL(url string, timeout time.Duration, userAgent string) ([]byte, error) {
 	// 实现步骤：
 	// 1. 如果 timeout 为 0，使用 DefaultTimeout
 	// 2. 如果 userAgent 为空，使用 DefaultUserAgent
@@ -150,9 +150,7 @@ func FetchYAMLFromURL(url string, timeout time.Duration, userAgent string) ([]by
 func createHTTPClient(timeout time.Duration) *http.Client {
 	// 创建配置好的 HTTP 客户端
 	// 使用 http.Client 的 Timeout 字段，它涵盖了连接、TLS握手、请求和响应的总超时时间
-	return &http.Client{
-		Timeout: timeout,
-	}
+	return http.DefaultClient
 }
 
 // FetchYAMLWithRetry 带重试机制的 YAML 获取
@@ -177,7 +175,7 @@ func createHTTPClient(timeout time.Duration) *http.Client {
 //
 // 注意：仅对临时性错误重试（如网络超时、5xx 状态码）。
 // 对客户端错误（4xx）不应重试。
-func FetchYAMLWithRetry(url string, timeout time.Duration, userAgent string, maxRetries int, retryDelay time.Duration) ([]byte, error) {
+func FetchURLWithRetry(url string, timeout time.Duration, userAgent string, maxRetries int, retryDelay time.Duration) ([]byte, error) {
 	var lastErr error
 	for i := 0; i <= maxRetries; i++ {
 		if i > 0 {
@@ -185,7 +183,7 @@ func FetchYAMLWithRetry(url string, timeout time.Duration, userAgent string, max
 			time.Sleep(delay)
 		}
 
-		body, err := FetchYAMLFromURL(url, timeout, userAgent)
+		body, err := FetchURL(url, timeout, userAgent)
 		if err == nil {
 			return body, nil
 		}
@@ -282,7 +280,7 @@ func isTimeoutError(err error) bool {
 // 这是一个示例函数，不会在正式代码中调用。
 func ExampleUsage() {
 	// 基本用法
-	body, err := FetchYAMLFromURL("https://example.com/config.yaml", 30*time.Second, "my-app/1.0")
+	body, err := FetchURL("https://example.com/config.yaml", 30*time.Second, "my-app/1.0")
 	if err != nil {
 		fmt.Printf("获取失败: %v\n", err)
 		return
@@ -290,7 +288,7 @@ func ExampleUsage() {
 	fmt.Printf("获取到 %d 字节数据\n", len(body))
 
 	// 带重试的用法
-	body2, err := FetchYAMLWithRetry("https://example.com/config.yaml", 30*time.Second, "my-app/1.0", 3, 1*time.Second)
+	body2, err := FetchURLWithRetry("https://example.com/config.yaml", 30*time.Second, "my-app/1.0", 3, 1*time.Second)
 	if err != nil {
 		fmt.Printf("带重试的获取也失败了: %v\n", err)
 		return

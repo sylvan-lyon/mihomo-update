@@ -228,18 +228,18 @@ func typeSwitch(v any) int {
 // 4. 将结果放入新映射
 func mergeMappings(local, remote any, mergeFunc func(any, any) (any, error)) (any, error) {
 	// 类型断言，确保是映射
-	localMap, ok := local.(map[any]any)
+	localMap, ok := local.(map[string]any)
 	if !ok {
-		return nil, errors.ErrYAMLType
+		return nil, errors.Wrap(errors.ErrYAMLType, "local")
 	}
 
-	remoteMap, ok := remote.(map[any]any)
+	remoteMap, ok := remote.(map[string]any)
 	if !ok {
-		return nil, errors.ErrYAMLType
+		return nil, errors.Wrap(errors.ErrYAMLType, "remote")
 	}
 
 	// 深拷贝本地映射
-	result := make(map[any]any)
+	result := make(map[string]any)
 	maps.Copy(result, localMap)
 
 	// 合并远程映射
@@ -274,12 +274,12 @@ func mergeSequences(local, remote any) (any, error) {
 	// 类型断言，确保是切片
 	localSlice, ok := local.([]any)
 	if !ok {
-		return nil, errors.ErrYAMLType
+		return nil, errors.Wrap(errors.ErrYAMLType, "local")
 	}
 
 	remoteSlice, ok := remote.([]any)
 	if !ok {
-		return nil, errors.ErrYAMLType
+		return nil, errors.Wrap(errors.ErrYAMLType, "remote")
 	}
 
 	// 创建新切片，合并两个切片

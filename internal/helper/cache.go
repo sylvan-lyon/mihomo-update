@@ -144,7 +144,7 @@ func (entry *CacheEntry) IsValid() (bool, error) {
 const cacheTTL = 24 * time.Hour
 
 func GetCacheDir(baseDir string) string {
-	return baseDir + "mihomo-update"
+	return filepath.Join(baseDir, "mihomo-update")
 }
 
 // GetCachePath 根据 URL 生成缓存文件路径，你可能永远用不到这个函数

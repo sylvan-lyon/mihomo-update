@@ -76,6 +76,10 @@ var (
 	ErrYAMLSerialize = errors.New("YAML serialization failed")
 )
 
+func Join(err ...error) error {
+	return errors.Join(err...)
+}
+
 // errors 模块和标准库中的 errors 模块重名了，work arround 一下
 func As(err error, target any) bool {
 	return errors.As(err, target)

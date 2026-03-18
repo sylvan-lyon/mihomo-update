@@ -40,7 +40,7 @@ require gopkg.in/yaml.v3 v3.0.1
 // require github.com/go-resty/resty/v2 v2.11.0
 
 // 错误组库 (阶段 7)
-// require golang.org/x/sync v0.6.0
+require golang.org/x/sync v0.6.0
 
 // 国际化库 (阶段 8，可选)
 // require golang.org/x/text v0.14.0

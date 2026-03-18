@@ -200,6 +200,16 @@ func fetchRemoteYAML(ctx context.Context, baseDir, url string, force bool, timeo
 	// 8. 记录更新时间（可选）
 	// 注意: 适当使用 context 处理取消信号
 
+	// 如果收到了取消信号，那么就直接返回
+	testContext := func() error {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			return nil
+		}
+	}
+
 	var (
 		yaml any
 		err  error
@@ -207,8 +217,14 @@ func fetchRemoteYAML(ctx context.Context, baseDir, url string, force bool, timeo
 	cacheDir := helper.GetCacheDir(baseDir)
 
 	if force {
+		if err := testContext(); err != nil {
+			return nil, err
+		}
 		yaml, err = helper.FetchYAMLFromURL(url, time.Duration(timeout), userAgent)
 	} else {
+		if err := testContext(); err != nil {
+			return nil, err
+		}
 		// 获取缓存出错我们不认为是致命的
 		yaml, err = helper.ReadCache(cacheDir, url)
 
@@ -220,6 +236,9 @@ func fetchRemoteYAML(ctx context.Context, baseDir, url string, force bool, timeo
 			fmt.Println(err)
 
 			// 重新获取，此处再出错那就没办法了，必须终止
+			if err := testContext(); err != nil {
+				return nil, err
+			}
 			yaml, err = helper.FetchYAMLFromURL(url, time.Duration(timeout), userAgent)
 		}
 	}
@@ -229,6 +248,9 @@ func fetchRemoteYAML(ctx context.Context, baseDir, url string, force bool, timeo
 	}
 
 	// 写入缓存的时候如果出错了无所谓，通知一下用户
+	if err := testContext(); err != nil {
+		return nil, err
+	}
 	if err := helper.WriteCache(cacheDir, &yaml, url); err != nil {
 		defer helper.ClearCache(cacheDir, url)
 
